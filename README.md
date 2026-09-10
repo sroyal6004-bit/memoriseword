@@ -11,7 +11,9 @@
 
 1. 저장소 **Settings → Pages** 로 이동
 2. **Build and deployment → Source** 를 **GitHub Actions** 로 선택
-3. 저장 후 아무 커밋이나 푸시하면 (또는 Actions 탭에서 `Deploy to GitHub Pages` 를 수동 실행) 배포됩니다.
+3. 저장 후 **Actions** 탭에서 실패한 `Deploy to GitHub Pages` 실행을 **Re-run** 하거나, 아무 커밋이나 푸시하면 배포됩니다.
+
+> Pages를 켜기 전에는 워크플로우가 `configure-pages` 단계에서 "Create Pages site failed" 로 실패합니다. 정상적인 현상이며, 위 설정 후 다시 실행하면 통과합니다.
 
 배포 주소: https://sroyal6004-bit.github.io/memoriseword/
 
