@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>말씀 암송 · Hannah</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600&family=Noto+Serif+KR:wght@400;500;600&display=swap');
+
+:root{
+  --bg:#14161b;--bg2:#0f1115;--surface:#1b1e25;--surface2:#22262f;
+  --line:rgba(232,226,210,0.10);--line2:rgba(232,226,210,0.18);
+  --ink:#e9e3d4;--ink-soft:#cfc8b6;--muted:#8a8475;--muted2:#6b665a;
+  --wine:#c06a5f;--wine-deep:#9c463c;--gold:#c9a24b;--gold-soft:#d8be86;
+  --correct:#86b079;--correct-bg:rgba(134,176,121,0.14);
+  --wrong:#d9776a;--wrong-bg:rgba(217,119,106,0.16);
+  --serif:'EB Garamond',Georgia,serif;
+  --serif-ko:'Noto Serif KR','EB Garamond',serif;
+  --sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI','Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;overflow:hidden}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input{font-family:inherit}
+::selection{background:rgba(201,162,75,0.30)}
+.app{display:flex;height:100vh;height:100dvh;overflow:hidden}
+
+.sidebar{width:286px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--line);display:flex;flex-direction:column;height:100%;transition:transform .28s cubic-bezier(.4,0,.2,1);z-index:40}
+.sb-head{padding:22px 22px 16px}
+.brand{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
+.brand .he{font-family:var(--serif);font-size:25px;color:var(--gold-soft);letter-spacing:.5px}
+.brand .ko{font-family:var(--serif-ko);font-size:19px;color:var(--ink)}
+.brand-sub{font-size:10.5px;letter-spacing:1.6px;text-transform:uppercase;color:var(--muted2);margin-top:6px;font-weight:500}
+.sb-prog{margin-top:18px}
+.sb-prog-row{display:flex;justify-content:space-between;align-items:baseline;font-size:11.5px;color:var(--muted);letter-spacing:.4px;margin-bottom:7px}
+.sb-prog-row b{color:var(--gold-soft);font-weight:600;font-size:13px}
+.bar{height:3px;background:var(--line);border-radius:2px;overflow:hidden}
+.bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--wine-deep),var(--gold));border-radius:2px;transition:width .5s ease}
+.manage-btn{width:100%;margin-top:14px;font-size:11.5px;color:var(--muted);border:1px dashed var(--line2);border-radius:8px;padding:9px;text-align:center;letter-spacing:.2px;transition:.14s}
+.manage-btn:hover{color:var(--gold-soft);border-color:var(--gold)}
+.sb-list{flex:1;overflow-y:auto;padding:6px 12px 24px}
+.sb-list::-webkit-scrollbar{width:7px}
+.sb-list::-webkit-scrollbar-thumb{background:var(--line2);border-radius:4px}
+.sec{margin-top:14px}
+.sec-label{font-size:10px;letter-spacing:1.6px;text-transform:uppercase;color:var(--muted2);padding:6px 10px 7px;font-weight:600}
+.v-item{display:flex;align-items:center;gap:9px;width:100%;padding:7px 10px;border-radius:7px;text-align:left;color:var(--ink-soft);font-size:13px;transition:background .12s}
+.v-item:hover{background:var(--surface)}
+.v-item.active{background:var(--surface2)}
+.v-item.active .vi-num{color:var(--gold-soft)}
+.vi-num{font-family:var(--serif);font-size:14px;color:var(--muted);width:34px;flex-shrink:0;font-variant-numeric:tabular-nums}
+.vi-ref{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12.5px;color:var(--ink-soft)}
+.v-item.active .vi-ref{color:var(--ink)}
+.vi-mark{width:15px;height:15px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.vi-mark svg{width:15px;height:15px}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--line2)}
+
+.main{flex:1;display:flex;flex-direction:column;min-width:0;height:100%}
+.topbar{height:56px;flex-shrink:0;display:flex;align-items:center;gap:12px;padding:0 22px;border-bottom:1px solid var(--line);background:var(--bg)}
+.icon-btn{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--muted);transition:.14s}
+.icon-btn:hover{background:var(--surface);color:var(--ink)}
+.icon-btn svg{width:19px;height:19px}
+.menu-btn{display:none}
+.topbar-spacer{flex:1}
+.lang-toggle{display:flex;gap:3px;background:var(--surface);border-radius:9px;padding:3px}
+.lang-toggle button{font-size:12px;padding:6px 13px;border-radius:7px;color:var(--muted);font-weight:600;letter-spacing:.4px;transition:.14s}
+.lang-toggle button.on{background:var(--gold);color:#1a1407}
+.lang-toggle button:hover:not(.on){color:var(--ink-soft)}
+.speak-btn{display:flex;align-items:center;gap:7px;background:var(--surface);border-radius:9px;padding:7px 13px;font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.3px;transition:.14s}
+.speak-btn svg{width:16px;height:16px}
+.speak-btn:hover{color:var(--ink-soft)}
+.speak-btn.on{background:var(--wine-deep);color:#f5e9e4}
+.read-wrap{text-align:center;padding:24px 4px 8px}
+.read-ref{font-family:var(--serif-ko);font-size:18px;color:var(--gold-soft);font-style:italic;margin-bottom:18px;letter-spacing:.3px;transition:color .2s,transform .2s}
+.read-ref.reading-now{color:var(--wine);transform:scale(1.04)}
+.read-body{font-family:var(--serif);font-size:24px;line-height:1.8;color:var(--ink);max-width:600px;margin:0 auto;letter-spacing:.2px}
+.read-body.ko{font-family:var(--serif-ko);font-size:21px;line-height:1.95}
+.read-body .rw{opacity:.15;transition:opacity .3s ease,color .3s ease}
+.read-body .rw.on{opacity:1}
+.read-body .rw.cur{color:var(--gold-soft)}
+.echo-toggle{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);cursor:pointer;user-select:none;margin-bottom:18px;letter-spacing:.3px}
+.echo-toggle .box{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--line2);display:flex;align-items:center;justify-content:center;transition:.15s}
+.echo-toggle .box svg{width:12px;height:12px;opacity:0;color:#1a1407;transition:.15s}
+.echo-toggle.on{color:var(--ink-soft)}
+.echo-toggle.on .box{background:var(--gold);border-color:var(--gold)}
+.echo-toggle.on .box svg{opacity:1}
+.rate-seg{display:inline-flex;gap:3px;background:var(--surface);border-radius:9px;padding:3px;margin-bottom:16px;flex-wrap:wrap;justify-content:center}
+.rate-seg .rl{align-self:center;font-size:10px;color:var(--muted2);padding:0 7px;letter-spacing:1px;text-transform:uppercase;font-weight:600}
+.rate-seg button{font-size:11.5px;padding:5px 11px;border-radius:6px;color:var(--muted);font-weight:600;transition:.14s;font-variant-numeric:tabular-nums}
+.rate-seg button.on{background:var(--wine-deep);color:#f5e9e4}
+.rate-seg button:hover:not(.on){color:var(--ink-soft)}
+.mic-wrap{text-align:center;padding:8px 0}
+.mic-dot{display:inline-flex;align-items:center;gap:9px;font-size:13px;color:var(--wine);font-weight:600;letter-spacing:.5px;margin-bottom:16px}
+.mic-dot .ring{width:12px;height:12px;border-radius:50%;background:var(--wine);animation:pulse 1s ease-in-out infinite}
+.heard{font-family:var(--serif);font-size:20px;color:var(--ink);min-height:42px;max-width:600px;margin:0 auto;line-height:1.7}
+.heard.ko{font-family:var(--serif-ko);font-size:18px}
+.heard:empty::before{content:'말씀을 따라 읽어 보세요…';color:var(--muted2);font-style:italic;font-size:16px}
+.music-bar{display:none;align-items:center;gap:12px;padding:11px 22px;background:var(--surface);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.music-bar.show{display:flex}
+.music-bar .mb-btn{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--muted);border:1px solid var(--line);border-radius:8px;padding:7px 12px;transition:.14s}
+.music-bar .mb-btn:hover{color:var(--ink);border-color:var(--line2)}
+.music-bar .mb-btn.play{background:var(--wine-deep);color:#f5e9e4;border-color:transparent}
+.music-bar .mb-btn svg{width:14px;height:14px}
+.music-name{font-size:12px;color:var(--muted);flex:1;min-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.music-vol{display:flex;align-items:center;gap:7px;color:var(--muted2)}
+.music-vol svg{width:15px;height:15px}
+.music-vol input[type=range]{width:88px;accent-color:var(--gold);cursor:pointer}
+@media(max-width:560px){.music-bar{padding:10px 14px;gap:9px}.music-name{flex-basis:100%;order:5}}
+.read-empty{color:var(--muted2);font-style:italic;font-size:18px}
+.read-pulse{display:inline-flex;align-items:center;gap:5px;margin-top:22px;font-size:11.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--wine);font-weight:600}
+.read-pulse i{width:7px;height:7px;border-radius:50%;background:var(--wine);animation:pulse 1.1s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.25;transform:scale(.8)}50%{opacity:1;transform:scale(1.15)}}
+.set-toggle{display:flex;gap:4px;background:var(--surface);border-radius:9px;padding:3px}
+.set-toggle button{font-size:11.5px;padding:6px 10px;border-radius:7px;color:var(--muted);letter-spacing:.3px;font-weight:500;transition:.14s;white-space:nowrap}
+.set-toggle button.on{background:var(--wine-deep);color:#f5e9e4}
+.set-toggle button:hover:not(.on){color:var(--ink-soft)}
+
+.stage{flex:1;overflow-y:auto;display:flex;justify-content:center;padding:36px 26px 80px}
+.stage::-webkit-scrollbar{width:9px}
+.stage::-webkit-scrollbar-thumb{background:var(--line2);border-radius:5px}
+.card{width:100%;max-width:680px}
+
+.card-head{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+.num-badge{font-family:var(--serif);font-size:24px;color:var(--gold);border:1px solid var(--line2);border-radius:10px;padding:7px 15px;font-variant-numeric:tabular-nums;line-height:1}
+.head-meta{flex:1;min-width:0}
+.head-kicker{font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted2);font-weight:600}
+.head-pos{font-family:var(--serif);font-size:15px;color:var(--muted);margin-top:3px;font-style:italic}
+.attempt-pill{font-size:11px;color:var(--muted);letter-spacing:.4px;text-align:right;flex-shrink:0}
+.attempt-pill .best{color:var(--gold-soft);font-weight:600}
+
+.ref-row{display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+.ref-tag{font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);font-weight:600;flex-shrink:0}
+.ref-input{flex:1;min-width:180px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:11px 15px;color:var(--ink);font-family:var(--serif);font-size:18px;outline:none;transition:.15s}
+.ref-input::placeholder{color:var(--muted2);font-style:italic}
+.ref-input:focus{border-color:var(--line2);background:#1e222a}
+.ref-input:disabled{opacity:1;color:var(--ink-soft)}
+.eye-btn{flex-shrink:0;display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:9px;padding:9px 13px;transition:.14s;letter-spacing:.3px}
+.eye-btn:hover{color:var(--gold-soft);border-color:var(--line2)}
+.eye-btn svg{width:15px;height:15px}
+.ref-reveal{font-family:var(--serif-ko);font-size:16px;color:var(--gold-soft);padding:2px 4px;flex-shrink:0;font-style:italic}
+.ref-result{font-size:13px;display:flex;align-items:center;gap:7px;flex-basis:100%;margin-top:-6px}
+.ref-result svg{width:15px;height:15px;flex-shrink:0}
+.ref-ok{color:var(--correct)}
+.ref-no{color:var(--wrong)}
+.ref-ans{font-family:var(--serif-ko);color:var(--gold-soft);font-style:italic}
+.ref-yours{color:var(--muted);text-decoration:line-through;text-decoration-color:rgba(217,119,106,.5)}
+
+.prompt{margin:0 0 12px;font-size:12.5px;color:var(--muted);letter-spacing:.3px;display:flex;align-items:center;gap:8px}
+.prompt svg{width:15px;height:15px;color:var(--muted2);flex-shrink:0}
+
+.editor-wrap{position:relative}
+textarea.editor{width:100%;min-height:170px;resize:vertical;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px 24px;color:var(--ink);font-family:var(--serif);font-size:21px;line-height:1.75;letter-spacing:.2px;outline:none;transition:border-color .15s,background .15s}
+textarea.editor.ko{font-family:var(--serif-ko);font-size:19px;line-height:1.95}
+textarea.editor::placeholder{color:var(--muted2);font-style:italic}
+textarea.editor:focus{border-color:var(--line2);background:#1e222a}
+textarea.editor:disabled{opacity:1;color:var(--ink-soft)}
+
+.empty-note{background:var(--surface);border:1px dashed var(--line2);border-radius:14px;padding:26px 24px;text-align:center}
+.empty-note .big{font-family:var(--serif-ko);font-size:17px;color:var(--ink-soft);margin-bottom:8px}
+.empty-note .sm{font-size:12.5px;color:var(--muted);line-height:1.6}
+
+.hint-line{font-family:var(--serif);font-size:18px;color:var(--muted2);letter-spacing:.18em;margin:14px 4px 0;line-height:2}
+.hint-line.ko{font-family:var(--serif-ko);letter-spacing:.05em}
+
+.actions{display:flex;align-items:center;gap:11px;margin-top:20px;flex-wrap:wrap}
+.btn{font-size:13.5px;font-weight:500;letter-spacing:.4px;padding:11px 22px;border-radius:10px;transition:.15s;display:inline-flex;align-items:center;gap:8px}
+.btn svg{width:16px;height:16px}
+.btn-primary{background:var(--wine-deep);color:#f6ebe7}
+.btn-primary:hover{background:var(--wine)}
+.btn-ghost{color:var(--muted);border:1px solid var(--line)}
+.btn-ghost:hover{color:var(--ink);border-color:var(--line2)}
+.btn-gold{background:var(--gold);color:#1a1407}
+.btn-gold:hover{background:var(--gold-soft)}
+.actions-spacer{flex:1}
+.kbd{font-size:10.5px;color:var(--muted2);letter-spacing:.3px}
+.kbd b{color:var(--muted);font-weight:600;font-family:var(--sans)}
+
+.result{margin-top:30px;border-top:1px solid var(--line);padding-top:28px;animation:fade .35s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.score-row{display:flex;align-items:center;gap:20px;margin-bottom:24px}
+.score-num{font-family:var(--serif);font-size:54px;line-height:1;font-variant-numeric:tabular-nums}
+.score-num small{font-size:24px;color:var(--muted)}
+.score-meta{display:flex;flex-direction:column;gap:5px}
+.score-tag{font-family:var(--serif-ko);font-size:18px;font-weight:500}
+.score-stats{font-size:12px;color:var(--muted);letter-spacing:.3px;display:flex;gap:14px;flex-wrap:wrap}
+.score-stats span b{font-weight:600}
+.s-ok{color:var(--correct)}.s-bad{color:var(--wrong)}.s-gold{color:var(--gold-soft)}
+.diff-block{margin-top:18px}
+.diff-label{font-size:10.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted2);font-weight:600;margin-bottom:9px}
+.diff-text{font-family:var(--serif);font-size:19px;line-height:1.95;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 22px}
+.diff-text.ko{font-family:var(--serif-ko);font-size:17px}
+.w{border-radius:4px}
+.w-eq{color:var(--ink)}.w-correct{color:var(--correct)}
+.w-extra{color:var(--wrong);text-decoration:line-through;text-decoration-color:rgba(217,119,106,.55);background:var(--wrong-bg);padding:1px 4px;margin:0 1px}
+.w-miss{color:var(--wrong);background:var(--wrong-bg);padding:1px 4px;border-radius:4px;margin:0 1px}
+.diff-answer .w-eq{color:var(--ink-soft)}
+.result-actions{display:flex;gap:11px;margin-top:26px;flex-wrap:wrap}
+.perfect{display:flex;align-items:center;gap:11px;background:var(--correct-bg);border:1px solid rgba(134,176,121,.3);border-radius:11px;padding:13px 18px;margin-bottom:20px}
+.perfect svg{width:20px;height:20px;color:var(--correct);flex-shrink:0}
+.perfect span{font-family:var(--serif-ko);font-size:16px;color:var(--correct)}
+
+.edit-note{font-size:11.5px;color:var(--muted);margin-top:9px;letter-spacing:.2px;display:flex;align-items:center;gap:7px}
+.edit-note svg{width:13px;height:13px;color:var(--gold);flex-shrink:0}
+
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:35;opacity:0;pointer-events:none;transition:.25s}
+.scrim.show{opacity:1;pointer-events:auto}
+.modal{position:fixed;z-index:50;top:50%;left:50%;transform:translate(-50%,-46%);width:min(440px,calc(100vw - 40px));background:var(--surface);border:1px solid var(--line2);border-radius:16px;padding:26px;opacity:0;pointer-events:none;transition:.22s}
+.modal.show{opacity:1;pointer-events:auto;transform:translate(-50%,-50%)}
+.modal h3{font-family:var(--serif-ko);font-size:21px;margin-bottom:4px}
+.modal p{font-size:12.5px;color:var(--muted);margin-bottom:20px;line-height:1.6}
+.modal-row{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-top:1px solid var(--line)}
+.modal-row:first-of-type{border-top:none}
+.modal-row .lab{font-size:13.5px;color:var(--ink-soft)}
+.modal-row .desc{font-size:11px;color:var(--muted);margin-top:3px}
+.switch{width:42px;height:24px;border-radius:13px;background:var(--line2);position:relative;transition:.18s;flex-shrink:0}
+.switch.on{background:var(--wine-deep)}
+.switch i{position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--ink);transition:.18s}
+.switch.on i{left:21px;background:#f6ebe7}
+.modal-foot{margin-top:22px;display:flex;gap:10px;justify-content:flex-end}
+.danger{color:var(--wrong);font-size:12.5px;padding:9px 14px;border-radius:8px;border:1px solid rgba(217,119,106,.3)}
+.danger:hover{background:var(--wrong-bg)}
+
+.modal.wide{width:min(680px,calc(100vw - 28px));max-height:84vh;overflow-y:auto}
+.modal.wide::-webkit-scrollbar{width:8px}
+.modal.wide::-webkit-scrollbar-thumb{background:var(--line2);border-radius:5px}
+.mrow-list{margin-top:6px}
+.mrow{display:flex;align-items:center;gap:6px;padding:9px 0;border-top:1px solid var(--line);flex-wrap:wrap}
+.mrow:first-of-type{border-top:none}
+.mrow-arrows{display:flex;flex-direction:column;gap:2px;flex-shrink:0}
+.mrow-arrows button{font-size:9px;color:var(--muted);width:20px;height:16px;line-height:1;border-radius:3px}
+.mrow-arrows button:hover:not(:disabled){color:var(--gold-soft);background:var(--surface2)}
+.mrow-arrows button:disabled{opacity:.25;cursor:default}
+.mrow input{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:6px 8px;color:var(--ink);font-size:12px;font-family:var(--sans)}
+.mrow input:focus{outline:none;border-color:var(--gold)}
+.mrow-n{width:54px;flex-shrink:0}
+.mrow-s{width:46px;flex-shrink:0}
+.mrow-ref{flex:1;min-width:110px}
+.mrow-refk{flex:1;min-width:110px;font-family:var(--serif-ko)}
+.mrow-del{font-size:11px;color:var(--wrong);padding:5px 9px;border-radius:6px;border:1px solid rgba(217,119,106,.3);flex-shrink:0}
+.mrow-del:hover{background:var(--wrong-bg)}
+.add-form{margin-top:18px;padding-top:16px;border-top:1px dashed var(--line2);display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.add-form input{background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:8px 10px;color:var(--ink);font-size:12.5px;font-family:var(--sans)}
+.add-form input:focus{outline:none;border-color:var(--gold)}
+.add-form .afn{width:70px}
+.add-form .afs{width:58px}
+.add-form .afref{flex:1;min-width:130px}
+.add-form button{background:var(--gold);color:#1a1407;border-radius:8px;padding:9px 16px;font-size:12.5px;font-weight:600;flex-shrink:0}
+.manage-foot{display:flex;justify-content:space-between;align-items:center;margin-top:20px;padding-top:14px;border-top:1px solid var(--line)}
+
+@media(max-width:860px){
+  .sidebar{position:fixed;top:0;left:0;height:100%;transform:translateX(-100%);box-shadow:0 0 40px rgba(0,0,0,.5)}
+  .sidebar.open{transform:translateX(0)}
+  .menu-btn{display:flex}
+  .stage{padding:24px 16px 80px}
+  .topbar{padding:0 14px;gap:8px}
+  .set-toggle button{padding:6px 8px;font-size:10.5px}
+  textarea.editor{font-size:19px;padding:18px}
+  .score-num{font-size:46px}
+}
+@media(max-width:560px){
+  .set-toggle .lbl{display:none}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-head">
+      <div class="brand"><span class="he">חַנָּה</span><span class="ko">· 말씀 암송</span></div>
+      <div class="brand-sub" id="brandSub">Grace · ESV Scripture Memory</div>
+      <div class="sb-prog">
+        <div class="sb-prog-row"><span id="progLabel">완료한 구절</span><span><b id="progCount">0</b> / <span id="totalCount">0</span></span></div>
+        <div class="bar"><i id="progBar" style="width:0%"></i></div>
+      </div>
+      <button class="manage-btn" id="manageBtn">+ 구절 추가 · 번호 · 순서 변경</button>
+    </div>
+    <div class="sb-list" id="sbList"></div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <button class="icon-btn menu-btn" id="menuBtn" aria-label="목록">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="lang-toggle">
+        <button id="langEn">EN</button>
+        <button id="langKo">한국어</button>
+      </div>
+      <button class="speak-btn" id="speakBtn" aria-label="낭독">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a9 9 0 0 1 0 14"/></svg>
+        <span id="speakLabel">낭독</span>
+      </button>
+      <button class="speak-btn" id="musicBtn" aria-label="음악">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        <span id="musicLabel">음악</span>
+      </button>
+      <div class="topbar-spacer"></div>
+      <div class="set-toggle">
+        <span class="kbd lbl" style="align-self:center;margin-right:3px">채점</span>
+        <button id="tCase">대소문자</button>
+        <button id="tPunct">구두점</button>
+      </div>
+      <button class="icon-btn" id="setBtn" aria-label="설정">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </div>
+    <div class="music-bar" id="musicBar">
+      <button class="mb-btn" id="musicPick">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        파일 선택
+      </button>
+      <button class="mb-btn" id="musicPlay">
+        <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+        재생
+      </button>
+      <span class="music-name" id="musicName">선택된 음악 없음</span>
+      <span class="music-vol">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg>
+        <input type="range" id="musicVol" min="0" max="100" value="35">
+      </span>
+    </div>
+    <div class="stage"><div class="card" id="card"></div></div>
+  </main>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<div class="modal" id="modal">
+  <h3>설정</h3>
+  <p>채점 기준과 진행 상황을 관리합니다. 진행 기록과 정답 수정은 영어·한국어를 따로 저장합니다.</p>
+  <div class="modal-row"><div><div class="lab">대소문자 구분</div><div class="desc">끄면 the = The 로 인정 (영어)</div></div><div class="switch" id="swCase"><i></i></div></div>
+  <div class="modal-row"><div><div class="lab">구두점 구분</div><div class="desc">끄면 쉼표·따옴표 차이를 무시</div></div><div class="switch" id="swPunct"><i></i></div></div>
+  <div class="modal-foot"><button class="danger" id="resetBtn">이 언어 진행 초기화</button><button class="btn btn-ghost" id="modalClose">닫기</button></div>
+</div>
+
+<div class="modal wide" id="manageModal"></div>
+
+<audio id="bgAudio" loop preload="auto"></audio>
+<input type="file" id="musicFile" accept="audio/*,.mp3" style="display:none">
+
+<script>
+/* ===== BASE DATA =====
+   ref : 영어 출처(버전 포함)  refK : 한국어 출처(현대인의 성경 책이름)
+   t   : 영어 본문(ESV/NIV)    tK   : 한국어 본문(현대인의 성경)
+   key : 내부 고유 식별자(진행기록/정답수정의 기준, 번호(n)가 바뀌어도 유지됨)
+*/
+const SECTIONS=[{key:'1',label:'1'},{key:'2',label:'2'},{key:'3',label:'3'},{key:'4',label:'4'},{key:'5',label:'5 · 병원경영'},{key:'6',label:'6'},{key:'7',label:'7'},{key:'8',label:'8'},{key:'+',label:'더 · 추가 구절'}];
+const VERSES=[
+  {n:'1.1',s:'1',ref:'1 Corinthians 3:16 ESV',refK:'고린도전서 3:16',t:'Do you not know that you are God\u2019s temple and that God\u2019s Spirit dwells in you?',tK:'여러분은 여러분 자신이 하나님의 성전인 것과 하나님의 성령님이 여러분 안에 계시는 것을 알지 못합니까?'},
+  {n:'1.2',s:'1',ref:'1 Chronicles 16:11 ESV',refK:'역대상 16:11',t:'Seek the Lord and his strength; seek his presence continually!',tK:'여호와를 찾고 그의 능력을 구하라. 항상 그를 찾아라.'},
+  {n:'1.3',s:'1',ref:'1 Corinthians 15:57 ESV',refK:'고린도전서 15:57',t:'But thanks be to God, who gives us the victory through our Lord Jesus Christ.',tK:'우리 주 예수 그리스도를 통해 우리에게 승리를 주시는 하나님께 감사드립니다.'},
+  {n:'1.4',s:'1',ref:'Luke 1:37 ESV',refK:'누가복음 1:37',t:'For nothing will be impossible with God.',tK:'하나님께는 불가능한 일이 아무것도 없다.'},
+  {n:'1.5',s:'1',ref:'Psalm 56:3 ESV',refK:'시편 56:3',t:'When I am afraid, I put my trust in you.',tK:'내가 두려울 때 주를 의지합니다.'},
+  {n:'1.6',s:'1',ref:'Psalm 105:1 ESV',refK:'시편 105:1',t:'Oh give thanks to the Lord; call upon his name; make known his deeds among the peoples!',tK:'여호와께 감사하고 그의 이름을 부르며 그가 행하신 일을 온 세상에 알려라.'},
+  {n:'1.7',s:'1',ref:'Psalm 77:11-12 ESV',refK:'시편 77:11-12',t:'I will remember the deeds of the Lord; yes, I will remember your wonders of old. I will ponder all your work, and meditate on your mighty deeds.',tK:'내가 여호와께서 행하신 일들을 기억하겠습니다. 옛날에 행하신 주의 기적들을 회상하겠습니다. 주의 모든 일을 깊이 생각하고 주의 크신 행적을 묵상하겠습니다.'},
+  {n:'1.8',s:'1',ref:'Ecclesiastes 12:13 ESV',refK:'전도서 12:13',t:'The end of the matter; all has been heard. Fear God and keep his commandments, for this is the whole duty of man.',tK:'세상 모든 일에 대한 결론은 이것이다: 하나님을 두려워하고 그의 명령을 순종하라. 이것이 사람이 해야 할 본분이다.'},
+  {n:'1.9',s:'1',ref:'Psalm 143:10 ESV',refK:'시편 143:10',t:'Teach me to do your will, for you are my God! Let your good Spirit lead me on level ground!',tK:'주는 나의 하나님이십니다. 나에게 주의 뜻을 따르도록 가르치소서. 주의 선한 성령으로 나를 평탄한 길로 인도하소서.'},
+  {n:'1.10',s:'1',ref:'Luke 6:35 ESV',refK:'누가복음 6:35',t:'But love your enemies, and do good, and lend, expecting nothing in return, and your reward will be great, and you will be sons of the Most High, for he is kind to the ungrateful and the evil.',tK:'그러나 너희는 원수를 사랑하고 그들에게 친절을 베풀며 아무것도 바라지 말고 나누어 주어라. 그러면 너희 상이 클 것이며 너희가 가장 높으신 분의 자녀가 될 것이다. 그분은 은혜를 모르는 악한 사람들에게도 자비로우시다.'},
+  {n:'2.1',s:'2',ref:'Galatians 5:13 ESV',refK:'갈라디아서 5:13',t:'For you were called to freedom, brothers. Only do not use your freedom as an opportunity for the flesh, but through love serve one another.',tK:'형제 여러분, 하나님은 여러분을 자유롭게 하라고 부르셨습니다. 그러나 그 자유를 육체의 욕망을 채우는 기회로 삼지 말고 사랑으로 서로 섬기십시오.'},
+  {n:'2.2',s:'2',ref:'Psalm 16:8 ESV',refK:'시편 16:8',t:'I have set the Lord always before me; because he is at my right hand, I shall not be shaken.',tK:'내가 여호와를 항상 내 앞에 모셨음이여, 그가 내 오른편에 계시므로 내가 흔들리지 않으리로다.'},
+  {n:'2.3',s:'2',ref:'1 John 5:4 ESV',refK:'요한일서 5:4',t:'For everyone who has been born of God overcomes the world. And this is the victory that has overcome the world\u2014our faith.',tK:'하나님의 자녀들은 누구나 세상을 이길 수 있기 때문입니다. 세상을 이긴 이김은 바로 우리의 믿음입니다.'},
+  {n:'2.4',s:'2',ref:'Mark 9:23 ESV',refK:'마가복음 9:23',t:'And Jesus said to him, \u201C\u2018If you can\u2019! All things are possible for one who believes.\u201D',tK:'예수님은 그에게 "\'할 수만 있다면\'이 무슨 말이냐? 믿는 사람에게는 못 할 일이 없다" 하고 말씀하셨다.'},
+  {n:'2.5',s:'2',ref:'Psalm 20:7 ESV',refK:'시편 20:7',t:'Some trust in chariots and some in horses, but we trust in the name of the Lord our God.',tK:'어떤 사람은 전차를 의지하고 어떤 사람은 군마를 의지하나 우리는 우리 하나님 여호와의 이름을 신뢰합니다.'},
+  {n:'2.6',s:'2',ref:'1 Chronicles 16:34 ESV',refK:'역대상 16:34',t:'Oh give thanks to the Lord, for he is good; for his steadfast love endures forever!',tK:'여호와께 감사하라. 그는 선하시며 그 인자하심이 영원함이로다.'},
+  {n:'2.7',s:'2',ref:'Psalm 103:13 ESV',refK:'시편 103:13',t:'As a father shows compassion to his children, so the Lord shows compassion to those who fear him.',tK:'아버지가 자식을 가련하게 여기듯이 여호와께서는 자기를 두려워하는 자를 가련하게 여기시나니'},
+  {n:'2.8',s:'2',ref:'Micah 6:8 ESV',refK:'미가 6:8',t:'He has told you, O man, what is good; and what does the Lord require of you but to do justice, and to love kindness, and to walk humbly with your God?',tK:'사람아, 여호와께서 선한 것이 무엇임을 너에게 보이셨다. 그가 너에게 요구하는 것은 공정하게 처사하고 자비를 사랑하며 겸손하게 네 하나님과 함께 행하는 것이다.'},
+  {n:'2.9',s:'2',ref:'Psalm 119:105 ESV',refK:'시편 119:105',t:'Your word is a lamp to my feet and a light to my path.',tK:'주의 말씀은 내 발의 등불이며 내 길의 빛입니다.'},
+  {n:'2.10',s:'2',ref:'Galatians 5:14 ESV',refK:'갈라디아서 5:14',t:'For the whole law is fulfilled in one word: \u201CYou shall love your neighbor as yourself.\u201D',tK:'모든 율법은 "네 이웃을 네 몸과 같이 사랑하라" 한 한마디 말씀으로 요약될 수 있습니다.'},
+  {n:'3.1',s:'3',ref:'Romans 12:1 ESV',refK:'로마서 12:1',t:'I appeal to you therefore, brothers, by the mercies of God, to present your bodies as a living sacrifice, holy and acceptable to God, which is your spiritual worship.',tK:'형제 여러분, 내가 하나님의 자비로우심으로 권합니다. 여러분의 몸을 하나님이 기뻐하시는 거룩한 산 제물로 드리십시오. 이것이 여러분이 드릴 영적 예배입니다.'},
+  {n:'3.2',s:'3',ref:'Isaiah 41:10 ESV',refK:'이사야 41:10',t:'fear not, for I am with you; be not dismayed, for I am your God; I will strengthen you, I will help you, I will uphold you with my righteous right hand.',tK:'내가 너와 함께 있으니 두려워하지 말아라. 내가 네 하나님이 되니 놀라지 말아라. 내가 너를 강하게 하고 너를 도와주며 나의 의로운 오른손으로 너를 붙들어 주겠다.'},
+  {n:'3.3',s:'3',ref:'Deuteronomy 20:4 ESV',refK:'신명기 20:4',t:'for the Lord your God is he who goes with you to fight for you against your enemies, to give you the victory.\u2019',tK:'여러분의 하나님 여호와는 여러분과 함께 가셔서 원수들을 쳐부수고 여러분에게 승리를 주실 분이십니다.\''},
+  {n:'3.4',s:'3',ref:'Philippians 4:13 ESV',refK:'빌립보서 4:13',t:'I can do all things through him who strengthens me.',tK:'나에게 능력 주시는 분 안에서 나는 모든 것을 할 수 있습니다.'},
+  {n:'3.5',s:'3',ref:'Proverbs 29:25',refK:'잠언 29:25',t:'The fear of man lays a snare, but whoever trusts in the Lord is safe',tK:'사람을 두려워하면 덫에 걸리지만 여호와를 신뢰하면 안전하다.'},
+  {n:'3.6',s:'3',ref:'Matthew 10:29-30',refK:'마태복음 10:29-30',t:'Are not two sparrows sold in a penny? And not one of them will fall to the ground apart from your Father. But even the hairs of your head are all numbered.',tK:'참새 두 마리가 한 푼에 팔리지 않느냐? 그러나 너희 하늘 아버지께서 허락하지 않으시면 그 참새 한 마리도 땅에 떨어지지 않는다. 아버지께서는 너희 머리카락까지도 다 세고 계신다.'},
+  {n:'3.7',s:'3',ref:'Luke 11:13 ESV',refK:'누가복음 11:13',t:'If you then, who are evil, know how to give good gifts to your children, how much more will the heavenly Father give the Holy Spirit to those who ask him!\u201D',tK:'너희가 악할지라도 자녀에게 좋은 것을 줄 줄 아는데 하물며 하늘에 계신 너희 아버지께서 구하는 사람에게 성령을 주시지 않겠느냐?"'},
+  {n:'3.8',s:'3',ref:'Exodus 19:5 ESV',refK:'출애굽기 19:5',t:'Now therefore, if you will indeed obey my voice and keep my covenant,',tK:'이제 너희가 내 말을 잘 듣고 내 계약을 지키면'},
+  {n:'3.9',s:'3',ref:'Exodus 19:5 ESV',refK:'출애굽기 19:5',t:'you shall be my treasured possession among all peoples, for all the earth is mine;',tK:'너희는 모든 민족 가운데서 내 소유가 될 것이다. 온 세상이 다 내 것이지만'},
+  {n:'3.10',s:'3',ref:'Exodus 19:6 ESV',refK:'출애굽기 19:6',t:'and you shall be to me a kingdom of priests and a holy nation.',tK:'너희는 나에게 제사장 나라가 되고 거룩한 백성이 될 것이다.'},
+  {n:'4.1',s:'4',ref:'Romans 8:6 NIV',refK:'로마서 8:6',t:'The mind governed by the flesh is death, but the mind governed by the Spirit is life and peace.',tK:'육신의 생각은 죽음을 뜻하고 성령의 생각은 생명과 평안을 뜻합니다.'},
+  {n:'4.2',s:'4',ref:'1 John 4:19 ESV',refK:'요한일서 4:19',t:'We love because he first loved us.',tK:'우리가 하나님을 사랑하는 것은 그분이 먼저 우리를 사랑하셨기 때문입니다.'},
+  {n:'4.3',s:'4',ref:'Romans 12:21 ESV',refK:'로마서 12:21',t:'Do not be overcome by evil, but overcome evil with good.',tK:'악에게 지지 말고 선으로 악을 이기십시오.'},
+  {n:'4.4',s:'4',ref:'Hebrews 13:8 ESV',refK:'히브리서 13:8',t:'Jesus Christ is the same yesterday and today and forever.',tK:'예수 그리스도는 어제나 오늘이나 영원히 한결같은 분이십니다.'},
+  {n:'4.5',s:'4',ref:'Matthew 10:31 ESV',refK:'마태복음 10:31',t:'Fear not, therefore; you are of more value than many sparrows.',tK:'그러므로 두려워하지 말아라. 너희는 많은 참새보다 더 귀하다.'},
+  {n:'4.6',s:'4',ref:'Psalm 100:2 ESV',refK:'시편 100:2',t:'Serve the Lord with gladness! Come into his presence with singing!',tK:'기쁜 마음으로 여호와를 섬기고 노래하며 그분 앞에 나아가거라.'},
+  {n:'4.7',s:'4',ref:'Matthew 11:28-29',refK:'마태복음 11:28-29',t:'Come to me, all who labor and are heavy laden, and I will give you rest. Take my yoke upon you, and learn from me, for I am gentle and lowly in heart, and you will find rest for your souls.',tK:'무거운 짐을 지고 지친 사람은 모두 나에게 오너라. 내가 너희를 쉬게 하겠다. 나는 마음이 온유하고 겸손하니 내 멍에를 메고 내게 배워라. 그러면 너희 영혼이 쉼을 얻을 것이다.'},
+  {n:'4.8',s:'4',ref:'Mark 8:35 ESV',refK:'마가복음 8:35',t:'For whoever would save his life will lose it, but whoever loses his life for my sake and the gospel\u2019s will save it.',tK:'누구든지 자기 생명을 구하고자 하는 사람은 잃을 것이며 나와 복음을 위해 자기 생명을 버리는 사람은 구할 것이다.'},
+  {n:'4.9',s:'4',ref:'Psalm 119:11 ESV',refK:'시편 119:11',t:'I have stored up your word in my heart, that I might not sin against you.',tK:'내가 주께 범죄하지 않으려고 주의 말씀을 내 마음에 간직하였습니다.'},
+  {n:'4.10',s:'4',ref:'Matthew 7:12 ESV',refK:'마태복음 7:12',t:'\u201CSo whatever you wish that others would do to you, do also to them, for this is the Law and the Prophets.',tK:'"그러므로 너희는 무엇이든지 남에게 대접을 받고자 하는 대로 남을 대접하라. 이것이 바로 율법과 예언자들의 가르침이다.'},
+  {n:'5.1',s:'5',ref:'Colossians 3:23-24',refK:'골로새서 3:23-24',t:'Whatever you do, work heartily, as for the Lord and not for men, knowing that from the Lord you will receive the inheritance as your reward. You are serving the Lord Christ.',tK:'무슨 일을 하든지 사람에게 하듯 하지 말고 주님께 하듯 정성껏 하십시오. 여러분은 주님에게서 하늘의 기업을 상으로 받게 된다는 것을 기억하십시오. 여러분이 섬기는 주인은 바로 그리스도이십니다.'},
+  {n:'5.2',s:'5',ref:'1 Chronicles 4:10 ESV',refK:'역대상 4:10',t:'Jabez called upon the God of Israel, saying, \u201COh that you would bless me and enlarge my border, and that your hand might be with me, and that you would keep me from harm so that it might not bring me pain!\u201D And God granted what he asked.',tK:'야베스는 이스라엘의 하나님께 "나에게 복에 복을 더하셔서 나의 영토를 넓혀 주시고 주의 손으로 나를 도우사 환난을 벗어나 고통을 당하지 않게 하소서" 하고 기도하였다. 그래서 하나님은 그가 구한 것을 허락하셨다.'},
+  {n:'5.3',s:'5',ref:'Proverbs 21:31 ESV',refK:'잠언 21:31',t:'The horse is made ready for the day of battle, but the victory belongs to the Lord.',tK:'싸움을 위해 마병을 예비하지만 승리는 여호와께 달려 있다.'},
+  {n:'5.4',s:'5',ref:'Ephesians 6:12 ESV',refK:'에베소서 6:12',t:'For we do not wrestle against flesh and blood, but against the rulers, against the authorities, against the cosmic powers over this present darkness, against the spiritual forces of evil in the heavenly places.',tK:'우리의 싸움은 인간을 적대로 하는 것이 아니라 이 어두운 세상을 지배하는 정치자들과 권세자들과 하늘에 있는 악한 영들을 상대로 하는 것입니다.'},
+  {n:'5.5',s:'5',ref:'John 14:18 ESV',refK:'요한복음 14:18',t:'\u201CI will not leave you as orphans; I will come to you.',tK:'내가 너희를 고아처럼 버려두지 않고 너희에게 다시 오겠다.'},
+  {n:'5.6',s:'5',ref:'Matthew 9:37-38 ESV',refK:'마태복음 9:37-38',t:'Then he said to his disciples, \u201CThe harvest is plentiful, but the laborers are few; therefore pray earnestly to the Lord of the harvest to send out laborers into his harvest.\u201D',tK:'그리고서 제자들에게 말씀하셨다. "추수할 것은 많으나 일꾼이 적다. 그러므로 추수할 주인에게 추수할 일꾼들을 보내 달라고 기도하라."'},
+  {n:'5.7',s:'5',ref:'Romans 8:28 ESV',refK:'로마서 8:28',t:'And we know that for those who love God all things work together for good, for those who are called according to his purpose.',tK:'하나님을 사랑하고 그분의 계획대로 부르심을 받은 사람들에게는 모든 일이 서로 작용해서 선을 이룬다는 것을 우리는 압니다.'},
+  {n:'5.8',s:'5',ref:'Proverbs 22:4',refK:'잠언 22:4',t:'The reward for humility and fear of the Lord is riches and honor and life.',tK:'겸손하여 여호와를 두려워하는 사람의 보상은 부와 명예와 생명이다.'},
+  {n:'5.9',s:'5',ref:'Psalm 94:19 ESV',refK:'시편 94:19',t:'When the cares of my heart are many, your consolations cheer my soul.',tK:'내 마음에 근심이 가득할 때 주의 위로가 내 영혼을 즐겁게 하십니다.'},
+  {n:'5.10',s:'5',ref:'John 15:4 ESV',refK:'요한복음 15:4',t:'Abide in me, and I in you. As the branch cannot bear fruit by itself, unless it abides in the vine, neither can you, unless you abide in me.',tK:'내 안에 머물러라. 그러면 나도 너희 안에 머무르겠다. 가지가 포도나무에 붙어 있지 않으면 스스로 열매를 맺을 수 없듯이 너희도 내 안에 머물러 있지 않으면 열매를 맺을 수 없다.'},
+  {n:'6.1',s:'6',ref:'Galatians 2:20 ESV',refK:'갈라디아서 2:20',t:'I have been crucified with Christ. It is no longer I who live, but Christ who lives in me. And the life I now live in the flesh I live by faith in the Son of God, who loved me and gave himself for me.',tK:'내가 그리스도와 함께 십자가에 못박혔으므로 이제는 내가 사는 것이 아니라 내 속에 그리스도께서 사시는 것입니다. 지금 내가 육체 가운데 사는 것은 나를 사랑하셔서 나를 위해 자기 몸을 버리신 하나님의 아들을 믿는 믿음으로 사는 것입니다.'},
+  {n:'6.2',s:'6',ref:'Proverbs 4:23 ESV',refK:'잠언 4:23',t:'Keep your heart with all vigilance, for from it flow the springs of life.',tK:'그 무엇보다도 네 마음을 지켜라. 여기에서 생명의 샘이 흘러나온다.'},
+  {n:'6.3',s:'6',ref:'Joshua 1:9 ESV',refK:'여호수아 1:9',t:'Have I not commanded you? Be strong and courageous. Do not be frightened, and do not be dismayed, for the Lord your God is with you wherever you go.\u201D',tK:'내가 너에게 강하고 담대하라고 명령하지 않았느냐? 너는 두려워하거나 낙심하지 말아라. 네가 어디로 가든지 네 하나님 여호와가 너와 함께할 것이다."'},
+  {n:'6.4',s:'6',ref:'2 Corinthians 5:17 ESV',refK:'고린도후서 5:17',t:'Therefore, if anyone is in Christ, he is a new creation. The old has passed away; behold, the new has come.',tK:'그러므로 누구든지 그리스도 안에 있으면 새로운 존재입니다. 옛 사람은 지나갔고 새 사람이 되었습니다.'},
+  {n:'6.5',s:'6',ref:'Psalm 27:14 ESV',refK:'시편 27:14',t:'Wait for the Lord; be strong, and let your heart take courage; wait for the Lord!',tK:'여호와를 바라보아라. 강하고 담대한 마음으로 여호와를 바라보아라.'},
+  {n:'6.6',s:'6',ref:'Leviticus 26:12 ESV',refK:'레위기 26:12',t:'I will walk among you and will be your God, and you shall be my people.',tK:'나는 너희 가운데 거닐며 너희 하나님이 되고 너희는 내 백성이 될 것이다.'},
+  {n:'6.7',s:'6',ref:'Proverbs 19:21 ESV',refK:'잠언 19:21',t:'Many are the plans in the mind of a man, but it is the purpose of the Lord that will stand.',tK:'사람의 마음에 많은 계획이 있어도 뜻을 이루시는 분은 여호와이시다.'},
+  {n:'6.8',s:'6',ref:'Colossians 3:1-2 ESV',refK:'골로새서 3:1-2',t:'If then you have been raised with Christ, seek the things that are above, where Christ is, seated at the right hand of God. Set your minds on things that are above, not on things that are on earth.',tK:'여러분은 그리스도와 함께 다시 살리심을 받았으니 하늘에 있는 것들을 추구하십시오. 거기에는 그리스도께서 하나님의 오른편에 앉아 계십니다. 하늘의 것을 생각하고 땅의 것을 생각하지 마십시오.'},
+  {n:'6.9',s:'6',ref:'Psalm 55:22 ESV',refK:'시편 55:22',t:'Cast your burden on the Lord, and he will sustain you; he will never permit the righteous to be moved.',tK:'네 짐을 여호와께 맡겨라. 그가 너를 붙드시고 의로운 자가 흔들리도록 버려두지 않으시리라.'},
+  {n:'6.10',s:'6',ref:'Matthew 22:37-39 ESV',refK:'마태복음 22:37-39',t:'And he said to him, \u201CYou shall love the Lord your God with all your heart and with all your soul and with all your mind. This is the great and first commandment. And a second is like it: You shall love your neighbor as yourself.',tK:'예수님은 이렇게 대답하셨다. "\'네 마음을 다하고 정성을 다하고 뜻을 다하여 네 하나님 여호와를 사랑하라.\' 이것이 가장 중요하고 으뜸가는 계명이다. 그 다음가는 계명도 이와 같은데 \'네 이웃을 네 몸과 같이 사랑하라\' 하신 것이다.'},
+  {n:'7.1',s:'7',ref:'Jeremiah 29:11-12 ESV',refK:'예레미야 29:11-12',t:'For I know the plans I have for you, declares the Lord, plans for welfare and not for evil, to give you a future and a hope. Then you will call upon me and come and pray to me, and I will hear you.',tK:'여호와께서 말씀하신다. \'너희를 향한 나의 계획은 내가 알고 있다. 그것은 너희에게 재앙을 주려는 것이 아니라 번영을 주고 너희에게 미래와 희망을 주려는 것이다. 너희가 나에게 부르짖고 와서 기도하면 내가 너희 기도를 들어주겠다.'},
+  {n:'7.2',s:'7',ref:'Psalm 62:1 ESV',refK:'시편 62:1',t:'For God alone my soul waits in silence; from him comes my salvation',tK:'내 영혼이 잠잠히 하나님만 바라봄이여, 나의 구원이 그에게서 나오는도다.'},
+  {n:'7.3',s:'7',ref:'Psalm 18:29',refK:'시편 18:29',t:'For by you I can run against a troop, and by my God I can leap over a wall.',tK:'주의 도움으로 내가 적진을 향해 달릴 수 있으며 나의 하나님을 의지하여 성벽을 뛰어넘을 수 있습니다.'},
+  {n:'7.4',s:'7',ref:'Isaiah 40:31 ESV',refK:'이사야 40:31',t:'but they who wait for the Lord shall renew their strength; they shall mount up with wings like eagles; they shall run and not be weary; they shall walk and not faint.',tK:'그러나 여호와를 바라보고 의지하는 자는 새 힘을 얻어 독수리처럼 날개치며 솟아오를 것이요 뛰어 가도 지치지 않고 걸어가도 피곤하지 않을 것이다.'},
+  {n:'7.5',s:'7',ref:'Romans 5:8 ESV',refK:'로마서 5:8',t:'but God shows his love for us in that while we were still sinners, Christ died for us.',tK:'그러나 우리가 아직 죄인이었을 때에 그리스도께서 우리를 위해 죽으심으로 하나님께서는 우리에 대한 자기의 사랑을 확실히 보여 주셨습니다.'},
+  {n:'7.6',s:'7',ref:'Nahum 1:7 ESV',refK:'나훔 1:7',t:'The Lord is good, a stronghold in the day of trouble; he knows those who take refuge in him.',tK:'여호와는 선하시며 환난 때에 피난처가 되신다. 그는 자기를 신뢰하는 자들을 돌보시나'},
+  {n:'7.7-8',s:'7',ref:'Exodus 34:6-7 ESV',refK:'출애굽기 34:6-7',t:'The Lord passed before him and proclaimed, \u201CThe Lord, the Lord, a God merciful and gracious, slow to anger, and abounding in steadfast love and faithfulness, keeping steadfast love for thousands, forgiving iniquity and transgression and sin, but who will by no means clear the guilty, visiting the iniquity of the fathers on the children and the children\u2019s children, to the third and the fourth generation.\u201D',tK:'그리고 여호와께서 모세 앞을 지나가시며 이렇게 외치셨다. "나는 자비롭고 은혜로우며 쉽게 노하지 않고 사랑과 진실이 풍성한 여호와 하나님이다. 나는 수천 대에 이르기까지 한결같은 사랑을 베풀며 악과 허물과 죄를 용서한다. 그러나 죄를 지은 자는 벌하지 않은 채 그냥 두지 않고 그 죄에 대하여 자손 삼사 대까지 벌할 것이다."'},
+  {n:'7.9',s:'7',ref:'Romans 8:26 ESV',refK:'로마서 8:26',t:'Likewise the Spirit helps us in our weakness. For we do not know what to pray for as we ought, but the Spirit himself intercedes for us with groanings too deep for words.',tK:'이와 같이 성령님도 우리의 연약함을 도와주십니다. 우리는 어떻게 기도해야 할지 모르지만 성령님이 말할 수 없는 탄식으로 우리를 위해 친히 간구해 주십니다.'},
+  {n:'7.10',s:'7',ref:'Zephaniah 3:17',refK:'스바냐 3:17',t:'The Lord your God is in your midst, a mighty one who will save; he will rejoice over you with gladness; he will quiet you by his love; he will exult over you with loud singing',tK:'너희 하나님 여호와가 너희 가운데 계신다. 그는 구원을 베푸실 전능하신 분이시다. 그가 너희를 보고 기뻐서 어쩔 줄 몰라하실 것이며 그의 사랑으로 너희를 새롭게 하시고 너희를 보며 즐거워 노래하실 것이다."'},
+  {n:'8.10',s:'8',ref:'1 Peter 1:3',refK:'베드로전서 1:3',t:'Blessed be the God and Father of our Lord Jesus Christ! According to his great mercy, he has caused us to be born again to a living hope through the resurrection of Jesus Christ from the dead',tK:'우리 주 예수 그리스도의 아버지 하나님을 찬양합시다! 하나님은 자비로우셔서 죽은 자 가운데서 부활하신 예수 그리스도를 통해 우리를 거듭나게 하시고 살아 있는 희망을 갖게 하셨으며'},
+  {n:'+1',s:'+',ref:'Ephesians 3:20-21 ESV',refK:'에베소서 3:20-21',t:'Now to him who is able to do far more abundantly than all that we ask or think, according to the power at work within us, to him be glory in the church and in Christ Jesus throughout all generations, forever and ever. Amen.',tK:'우리 가운데서 역사하시는 능력을 따라 우리가 구하거나 생각하는 것보다 훨씬 넘치도록 주실 수 있는 하나님께 교회와 그리스도 예수 안에서 대대로 영원무궁히 영광이 있기를 바랍니다. 아멘.'},
+  {n:'+2',s:'+',ref:'Hebrews 4:12 ESV',refK:'히브리서 4:12',t:'For the word of God is living and active, sharper than any two-edged sword, piercing to the division of soul and of spirit, of joints and of marrow, and discerning the thoughts and intentions of the heart.',tK:'하나님의 말씀은 살아 있고 활동력이 있어서 양쪽에 날이 선 그 어떤 칼보다도 날카롭습니다. 그래서 혼과 영을 쪼개고 관절과 골수를 갈라 놓으며 마음의 생각과 의도를 감찰합니다.'},
+  {n:'+3',s:'+',ref:'Hebrews 11:1 ESV',refK:'히브리서 11:1',t:'Now faith is the assurance of things hoped for, the conviction of things not seen.',tK:'믿음은 우리가 바라는 것들에 대한 확신이며 보이지 않는 것들에 대한 증거입니다.'},
+  {n:'+4',s:'+',ref:'John 1:1-5, 9-14 ESV',refK:'요한복음 1:1-5, 9-14',t:'In the beginning was the Word, and the Word was with God, and the Word was God. He was in the beginning with God. All things were made through him, and without him was not any thing made that was made. In him was life, and the life was the light of men. The light shines in the darkness, and the darkness has not overcome it. The true light, which gives light to everyone, was coming into the world. He was in the world, and the world was made through him, yet the world did not know him. He came to his own, and his own people did not receive him. But to all who did receive him, who believed in his name, he gave the right to become children of God, who were born, not of blood nor of the will of the flesh nor of the will of man, but of God. And the Word became flesh and dwelt among us, and we have seen his glory, glory as of the only Son from the Father, full of grace and truth.',tK:'우주가 창조되기 전에 말씀이 계셨다. 그 말씀은 하나님과 함께 계셨고 바로 하나님이셨다. 말씀은 천지 창조 전부터 하나님과 함께 계셨으며 모든 것은 그분을 통해 창조되었으니 창조된 것 치고 그분 없이 된 것은 하나도 없다. 그분 안에 생명이 있었으니 이 생명은 사람들의 빛이었다. 이 빛이 어둠 속에 비치고 있었으나 어둠은 빛을 깨닫지 못했다. 세상에 와서 모든 사람에게 비추는 참 빛이 있었다. 그분이 세상에 계셨고 세상은 그분을 통해 창조되었는데도 세상은 그분을 알아보지 못했다. 그분이 자기 백성의 나라에 오셨으나 그들은 그분을 영접하지 않았다. 그러나 그분을 영접하고 믿는 사람들에게는 하나님의 자녀가 되는 특권을 주셨다. 이들이 하나님의 자녀가 된 것은 혈통이나 육정이나 사람의 뜻으로 된 것이 아니라 하나님의 뜻에 의해 태어났기 때문이다. 말씀이 사람이 되셔서 우리 가운데 사셨다. 우리가 그분의 영광을 보니 이것은 독생자이신 주님의 영광이며 은혜와 진리가 충만해 있었다.'},
+  {n:'+5',s:'+',ref:'John 1:16 ESV',refK:'요한복음 1:16',t:'For from his fullness we have all received, grace upon grace.',tK:'우리는 다 그분의 충만한 데서 은혜를 과분하게 받았다.'},
+  {n:'+6',s:'+',ref:'John 1:17 ESV',refK:'요한복음 1:17',t:'For the law was given through Moses; grace and truth came through Jesus Christ.',tK:'모세를 통해서는 율법을 주셨지만 예수 그리스도를 통해서는 은혜와 진리가 왔다.'},
+  {n:'+7',s:'+',ref:'Deuteronomy 7:9 ESV',refK:'신명기 7:9',t:'Know therefore that the Lord your God is God, the faithful God who keeps covenant and steadfast love with those who love him and keep his commandments, to a thousand generations,',tK:'그러므로 너희 하나님 여호와만이 참 하나님이심을 알아야 한다. 그는 자기를 사랑하고 자기 계명을 지키는 자에게 천 대에 이르기까지 그의 계약을 지키시며 한결같은 사랑을 베푸시는 신실하신 하나님이시다.'},
+  {n:'+8',s:'+',ref:'Romans 8:32 ESV',refK:'로마서 8:32',t:'He who did not spare his own Son but gave him up for us all, how will he not also with him graciously give us all things?',tK:'자기 아들까지 아끼지 않으시고 우리 모든 사람을 위해 내어주신 하나님이 어찌 그 아들과 함께 다른 모든 것도 우리에게 아낌없이 주시지 않겠습니까?'}
+];
+VERSES.forEach((v,i)=>{ v.key='b'+i; });
+const N2KEY={}; VERSES.forEach(v=>{ N2KEY[v.n]=v.key; });
+
+/* ===== STORAGE =====
+   중요: 이 파일은 다운로드되어 브라우저에서 단독으로 열리므로,
+   Claude 아티팩트 전용 API(window.storage)는 대개 존재하지 않는다.
+   그래서 이 기기의 localStorage를 기본 저장소로 쓰고, window.storage는 있으면 보조로만 시도한다.
+*/
+const LS_PREFIX='smv3_';
+const mem={};
+function lsGet(k){ try{ const v=localStorage.getItem(LS_PREFIX+k); return v!=null?JSON.parse(v):undefined; }catch(e){ return undefined; } }
+function lsSet(k,v){ try{ localStorage.setItem(LS_PREFIX+k, JSON.stringify(v)); return true; }catch(e){ return false; } }
+const store={
+  async get(k){
+    const lv=lsGet(k); if(lv!==undefined) return lv;
+    try{ const r=await window.storage.get(k); if(r) return JSON.parse(r.value); }catch(e){}
+    return (k in mem) ? mem[k] : null;
+  },
+  async set(k,v){
+    const ok=lsSet(k,v);
+    try{ await window.storage.set(k, JSON.stringify(v)); }catch(e){}
+    if(!ok) mem[k]=v;
+  }
+};
+
+/* ===== STATE ===== */
+const READ_GAP=5000; const REF_GAP=2000;
+const RATES=[{r:0.7,l:'0.7×'},{r:0.85,l:'0.85×'},{r:1.0,l:'1.0×'},{r:1.2,l:'1.2×'},{r:1.4,l:'1.4×'}];
+const state={
+  lang:'en', idx:0, graded:false, result:null, refResult:null,
+  draft:'', draftRef:'', showHint:false, showRefHint:false, editing:false, reading:false,
+  echo:false, listening:false, readPhase:'read', _heard:'', _echoResult:null,
+  rate:0.85, _fb:null, _gap:null,
+  settings:{caseS:false,punct:false},
+  progress:{en:{},ko:{}}, overrides:{en:{},ko:{}},
+  order:[], custom:[], meta:{}
+};
+
+/* ===== GRADING (변경 없음) ===== */
+function tokenize(t){ return t.trim().split(/\s+/).filter(Boolean); }
+function normTok(tok,opt){
+  let s=tok.replace(/[\u2018\u2019\u201B]/g,"'").replace(/[\u201C\u201D]/g,'"').replace(/[\u2014\u2013]/g,'-');
+  if(!opt.punct) s=s.replace(/[^\p{L}\p{N}']/gu,'');
+  if(!opt.caseS) s=s.toLowerCase();
+  return s;
+}
+function grade(ans,inp,opt){
+  const aT=tokenize(ans),bT=tokenize(inp);
+  const a=aT.map(t=>normTok(t,opt)),b=bT.map(t=>normTok(t,opt));
+  const n=a.length,m=b.length;
+  const dp=Array.from({length:n+1},()=>new Int32Array(m+1));
+  for(let i=n-1;i>=0;i--)for(let j=m-1;j>=0;j--)
+    dp[i][j]= a[i]===b[j]? dp[i+1][j+1]+1 : Math.max(dp[i+1][j],dp[i][j+1]);
+  const ops=[];let i=0,j=0;
+  while(i<n&&j<m){
+    if(a[i]===b[j]){ops.push({t:'eq',a:aT[i],b:bT[j]});i++;j++;}
+    else if(dp[i+1][j]>=dp[i][j+1]){ops.push({t:'miss',a:aT[i]});i++;}
+    else {ops.push({t:'extra',b:bT[j]});j++;}
+  }
+  while(i<n){ops.push({t:'miss',a:aT[i]});i++;}
+  while(j<m){ops.push({t:'extra',b:bT[j]});j++;}
+  const correct=ops.filter(o=>o.t==='eq').length;
+  return {ops,correct,miss:ops.filter(o=>o.t==='miss').length,extra:ops.filter(o=>o.t==='extra').length,total:n,acc:n?Math.round(correct/n*100):0};
+}
+function normRef(s){ return (s||'').replace(/\s+/g,'').replace(/[\u2013\u2014~]/g,'-').toLowerCase(); }
+
+/* ===== HELPERS ===== */
+const $=id=>document.getElementById(id);
+function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+const isKo=()=>state.lang==='ko';
+function baseBody(v){ return isKo()? v.tK : v.t; }
+function answerBody(v){ const o=state.overrides[state.lang][v.key]; return o!=null?o:(baseBody(v)||''); }
+function answerRef(v){ return isKo()? (v.refK||'') : (v.ref||'').replace(/ (ESV|NIV)$/,''); }
+function verVersion(v){ const m=(v.ref||'').match(/ESV|NIV/); return m?m[0]:''; }
+function prog(){ return state.progress[state.lang]; }
+function tagWord(v){ const p=prog()[v.key]; if(!p)return'none'; if(p.best>=100)return'done'; if(p.best>=70)return'part'; return'tried'; }
+function hasBody(v){ return (answerBody(v)||'').trim().length>0; }
+
+/* ===== 데이터 레이어: 순서/추가/번호변경 =====
+   VERSES는 불변 원본(78개). state.custom은 사용자가 추가한 구절.
+   state.meta[key]는 기존(원본) 구절의 번호/구간/장절을 덮어쓴 값.
+   state.order는 현재 화면에 보여줄 전체 순서(키의 배열). */
+function baseByKey(k){ return VERSES.find(v=>v.key===k); }
+function customByKey(k){ return state.custom.find(v=>v.key===k); }
+function resolveVerse(k){
+  const b=baseByKey(k);
+  if(b){ const m=state.meta[k]; return m?Object.assign({},b,m):b; }
+  return customByKey(k)||null;
+}
+function LIST(){ return state.order.map(resolveVerse).filter(Boolean); }
+function normalizeOrder(){
+  let ord=(state.order||[]).filter(k=>baseByKey(k)||customByKey(k));
+  VERSES.forEach(v=>{ if(!ord.includes(v.key)) ord.push(v.key); });
+  state.custom.forEach(v=>{ if(!ord.includes(v.key)) ord.push(v.key); });
+  state.order=ord;
+}
+
+/* ===== SIDEBAR ===== */
+function renderSidebar(){
+  const list=LIST();
+  const wrap=$('sbList'); wrap.innerHTML='';
+  const usedKeys=new Set(); const groups=[];
+  SECTIONS.forEach(sec=>{
+    const vs=list.filter(v=>v.s===sec.key);
+    if(vs.length){ groups.push({label:sec.label,vs}); vs.forEach(v=>usedKeys.add(v.key)); }
+  });
+  const extraS=[...new Set(list.filter(v=>!usedKeys.has(v.key)).map(v=>v.s))].sort();
+  extraS.forEach(k=>{ const vs=list.filter(v=>v.s===k); if(vs.length) groups.push({label:k||'추가',vs}); });
+
+  groups.forEach(g=>{
+    const sec=document.createElement('div'); sec.className='sec';
+    const lab=document.createElement('div'); lab.className='sec-label'; lab.textContent=g.label; sec.appendChild(lab);
+    g.vs.forEach(v=>{
+      const gi=list.findIndex(x=>x.key===v.key), tag=tagWord(v);
+      const btn=document.createElement('button');
+      btn.className='v-item'+(gi===state.idx?' active':'');
+      let mark;
+      if(tag==='done')mark='<svg viewBox="0 0 24 24" fill="none" stroke="var(--correct)" stroke-width="2.4"><polyline points="20 6 9 17 4 12"/></svg>';
+      else if(tag==='part')mark='<span class="dot" style="background:var(--gold)"></span>';
+      else if(tag==='tried')mark='<span class="dot" style="background:var(--wine)"></span>';
+      else mark='<span class="dot"></span>';
+      btn.innerHTML='<span class="vi-num">'+esc(v.n)+'</span><span class="vi-ref">'+esc(answerRef(v))+'</span><span class="vi-mark">'+mark+'</span>';
+      btn.onclick=()=>{goTo(gi);closeSidebar();};
+      sec.appendChild(btn);
+    });
+    wrap.appendChild(sec);
+  });
+  const done=list.filter(v=>prog()[v.key]&&prog()[v.key].best>=100).length;
+  $('progCount').textContent=done; $('totalCount').textContent=list.length;
+  $('progBar').style.width=(list.length? done/list.length*100:0)+'%';
+  $('brandSub').textContent=isKo()?'은혜 · 현대인의 성경 암송':'Grace · ESV Scripture Memory';
+  $('progLabel').textContent=isKo()?'완료한 구절 (한국어)':'완료한 구절 (English)';
+}
+
+/* ===== CARD ===== */
+function renderCard(){
+  const list=LIST();
+  if(!list.length){
+    $('card').innerHTML='<div class="empty-note"><div class="big">표시할 구절이 없습니다</div><div class="sm">왼쪽 아래 <b style="color:var(--gold-soft)">+ 구절 추가</b>에서 새 구절을 추가해 주세요.</div></div>';
+    return;
+  }
+  if(state.idx>=list.length) state.idx=list.length-1;
+  if(state.idx<0) state.idx=0;
+  const v=list[state.idx];
+  if(state.reading){
+    if(state.readPhase==='listen') renderListen(v);
+    else if(state.readPhase==='result') renderEchoResult(v);
+    else renderReading(v);
+    return;
+  }
+  if(state.editing){renderEdit(v);return;}
+  const card=$('card');
+  const p=prog()[v.key];
+  const koCls=isKo()?' ko':'';
+  let html='';
+  html+='<div class="card-head"><span class="num-badge">'+esc(v.n)+'</span>';
+  html+='<div class="head-meta"><div class="head-kicker">'+(isKo()?'현대인의 성경':(verVersion(v)||'\u00A0'))+'</div>';
+  html+='<div class="head-pos">'+(state.idx+1)+' / '+list.length+'</div></div>';
+  html+='<div class="attempt-pill">'+(p?('최고 <span class="best">'+p.best+'%</span><br>'+p.attempts+'회 시도'):'첫 시도')+'</div></div>';
+
+  if(!state.graded){
+    html+='<div class="ref-row"><span class="ref-tag">장절</span>';
+    html+='<input class="ref-input" id="refIn" placeholder="'+(isKo()?'예) 시편 56:3':'e.g. Psalm 56:3')+'" value="'+esc(state.draftRef||'')+'" spellcheck="false" autocomplete="off">';
+    html+='<button class="eye-btn" id="refHintBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>'+(state.showRefHint?'숨기기':'힌트')+'</button>';
+    html+=(state.showRefHint?('<span class="ref-reveal">'+esc(answerRef(v))+'</span>'):'')+'</div>';
+  } else if(state.refResult){
+    const rr=state.refResult;
+    html+='<div class="ref-row"><span class="ref-tag">장절</span><div class="ref-result">';
+    if(rr.ok){
+      html+='<svg viewBox="0 0 24 24" fill="none" stroke="var(--correct)" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg><span class="ref-ok">'+esc(answerRef(v))+'</span>';
+    } else {
+      html+='<svg viewBox="0 0 24 24" fill="none" stroke="var(--wrong)" stroke-width="2.2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+      html+='정답 <span class="ref-ans">'+esc(answerRef(v))+'</span>'+(rr.input?(' · 입력 <span class="ref-yours">'+esc(rr.input)+'</span>'):' · 입력 없음');
+    }
+    html+='</div></div>';
+  }
+
+  if(!state.graded){
+    if(!hasBody(v)){
+      html+='<div class="empty-note"><div class="big">'+(isKo()?'이 구절의 현대인의 성경 본문이 아직 없습니다':'No text yet')+'</div>';
+      html+='<div class="sm">아래 <b style="color:var(--gold-soft)">정답 수정</b> 버튼으로 본문을 입력하면 채점을 시작할 수 있습니다.</div></div>';
+      html+='<div class="actions"><button class="btn btn-gold" id="editBtn">정답 수정 · 본문 입력</button><div class="actions-spacer"></div>';
+      html+=(state.idx<list.length-1?'<button class="btn btn-ghost" id="skipBtn">다음 구절</button>':'')+'</div>';
+      card.innerHTML=html; bindCard(); return;
+    }
+    html+='<div class="prompt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
+    html+=(isKo()?'본문을 외워서 입력하고, 위에 장절도 적어보세요.':'Type the verse from memory, and fill in the reference above.')+'</div>';
+    html+='<div class="editor-wrap"><textarea class="editor'+koCls+'" id="ta" placeholder="'+(isKo()?'여기에 말씀을 입력…':'Type the verse here…')+'" spellcheck="false" autocomplete="off">'+esc(state.draft||'')+'</textarea></div>';
+    if(state.showHint){
+      const ans=answerBody(v);
+      const hint=ans.split(/\s+/).map(w=>{const c=w.replace(/[^\p{L}\p{N}]/gu,'');return esc(c[0]||w[0]||'')+'\u00B7'.repeat(Math.max(0,c.length-1));}).join(' ');
+      html+='<div class="hint-line'+koCls+'">'+hint+'</div>';
+    }
+    html+='<div class="actions"><button class="btn btn-primary" id="checkBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>확인</button>';
+    html+='<button class="btn btn-ghost" id="hintBtn">'+(state.showHint?'힌트 숨기기':'첫 글자 힌트')+'</button>';
+    html+='<button class="btn btn-ghost" id="editBtn">정답 수정</button><div class="actions-spacer"></div>';
+    html+='<span class="kbd"><b>Ctrl</b>+<b>Enter</b> 확인</span></div>';
+  } else {
+    const r=state.result, perfect=r.acc>=100;
+    const tag=perfect?'완벽합니다':(r.acc>=85?'거의 다 왔어요':(r.acc>=60?'조금 더':'다시 새겨봅시다'));
+    const col=perfect?'var(--correct)':(r.acc>=60?'var(--gold-soft)':'var(--wine)');
+    html+='<div class="result">';
+    if(perfect)html+='<div class="perfect"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 7.4H22l-6 4.6 2.3 7.4-6.3-4.6L5.7 21l2.3-7.4-6-4.6h7.6z"/></svg><span>한 단어도 틀리지 않았습니다.</span></div>';
+    html+='<div class="score-row"><div class="score-num" style="color:'+col+'">'+r.acc+'<small>%</small></div>';
+    html+='<div class="score-meta"><div class="score-tag" style="color:'+col+'">'+tag+'</div>';
+    html+='<div class="score-stats"><span class="s-ok"><b>'+r.correct+'</b> 정확</span>';
+    html+=(r.miss?('<span class="s-bad"><b>'+r.miss+'</b> 누락</span>'):'');
+    html+=(r.extra?('<span class="s-bad"><b>'+r.extra+'</b> 잘못</span>'):'');
+    html+='<span class="s-gold">총 <b>'+r.total+'</b>단어</span></div></div></div>';
+    html+='<div class="diff-block"><div class="diff-label">내가 입력한 답안</div><div class="diff-text'+koCls+'">';
+    html+=(r.ops.map(o=>o.t==='eq'?('<span class="w w-correct">'+esc(o.b)+'</span>'):o.t==='extra'?('<span class="w w-extra">'+esc(o.b)+'</span>'):'').filter(Boolean).join(' '))||'<span style="color:var(--muted2);font-style:italic">— 입력 없음 —</span>';
+    html+='</div></div>';
+    if(!perfect){
+      html+='<div class="diff-block diff-answer"><div class="diff-label">정답 · 빨강은 빠뜨린 단어</div><div class="diff-text'+koCls+'">';
+      html+=r.ops.map(o=>o.t==='eq'?('<span class="w w-eq">'+esc(o.a)+'</span>'):o.t==='miss'?('<span class="w w-miss">'+esc(o.a)+'</span>'):'').filter(Boolean).join(' ');
+      html+='</div></div>';
+    }
+    html+='<div class="result-actions">';
+    if(state.idx<list.length-1)html+='<button class="btn '+(perfect?'btn-gold':'btn-primary')+'" id="nextBtn">다음 구절<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>';
+    html+='<button class="btn btn-ghost" id="retryBtn">다시 시도</button>';
+    if(state.idx>=list.length-1&&perfect)html+='<span class="kbd" style="align-self:center">마지막 구절까지 완료했습니다 \u2726</span>';
+    html+='</div></div>';
+  }
+  card.innerHTML=html; bindCard();
+}
+
+function renderEdit(v){
+  const cur=answerBody(v), koCls=isKo()?' ko':'';
+  let html='';
+  html+='<div class="card-head"><span class="num-badge">'+esc(v.n)+'</span>';
+  html+='<div class="head-meta"><div class="head-kicker">'+(isKo()?'현대인의 성경':verVersion(v))+'</div><div class="head-pos">'+esc(answerRef(v))+' · 본문 수정</div></div></div>';
+  html+='<div class="prompt">채점 기준이 되는 '+(isKo()?'한국어(현대인의 성경)':'영어(ESV)')+' 본문입니다. 직접 입력하거나 고칠 수 있습니다.</div>';
+  html+='<div class="editor-wrap"><textarea class="editor'+koCls+'" id="editTa" spellcheck="false" placeholder="'+(isKo()?'현대인의 성경 본문을 입력…':'Enter verse text…')+'">'+esc(cur)+'</textarea></div>';
+  html+='<div class="edit-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg>수정 내용은 이 기기에 '+(isKo()?'한국어':'영어')+' 본문으로 저장됩니다.</div>';
+  html+='<div class="actions"><button class="btn btn-primary" id="saveEditBtn">저장</button><button class="btn btn-ghost" id="cancelEditBtn">취소</button>';
+  html+=(state.overrides[state.lang][v.key]!=null?'<button class="btn btn-ghost" id="revertBtn" style="color:var(--wine)">원본으로 되돌리기</button>':'')+'</div>';
+  $('card').innerHTML=html;
+  $('saveEditBtn').onclick=async()=>{
+    const val=$('editTa').value.trim();
+    if(val)state.overrides[state.lang][v.key]=val; else delete state.overrides[state.lang][v.key];
+    await store.set('overrides',state.overrides);
+    state.editing=false;render();
+  };
+  $('cancelEditBtn').onclick=()=>{state.editing=false;renderCard();};
+  const rv=$('revertBtn');
+  if(rv)rv.onclick=async()=>{delete state.overrides[state.lang][v.key];await store.set('overrides',state.overrides);state.editing=false;render();};
+  $('editTa').focus();
+}
+
+/* ===== 구절 관리(추가 · 순서 · 번호) ===== */
+function openManage(){ renderManage(); $('manageModal').classList.add('show'); $('scrim').classList.add('show'); }
+function closeManage(){
+  $('manageModal').classList.remove('show');
+  if(!$('sidebar').classList.contains('open')) $('scrim').classList.remove('show');
+  const list=LIST(); if(state.idx>=list.length) state.idx=Math.max(0,list.length-1);
+  render();
+}
+function moveOrder(key,dir){
+  const idx=state.order.indexOf(key), sw=idx+dir;
+  if(idx<0||sw<0||sw>=state.order.length) return;
+  const tmp=state.order[idx]; state.order[idx]=state.order[sw]; state.order[sw]=tmp;
+  store.set('order',state.order); renderManage();
+}
+function setMeta(key,field,value){
+  if(baseByKey(key)){
+    if(!state.meta[key]) state.meta[key]={};
+    state.meta[key][field]=value;
+    store.set('meta',state.meta);
+  } else {
+    const c=customByKey(key);
+    if(c){ c[field]=value; store.set('custom',state.custom); }
+  }
+  renderSidebar();
+}
+function deleteVerse(key){
+  if(!confirm('이 구절을 목록에서 삭제할까요? 이 구절의 진행 기록도 함께 삭제됩니다.')) return;
+  state.order=state.order.filter(k=>k!==key);
+  state.custom=state.custom.filter(v=>v.key!==key);
+  delete state.meta[key];
+  ['en','ko'].forEach(l=>{ delete state.progress[l][key]; delete state.overrides[l][key]; });
+  store.set('order',state.order); store.set('custom',state.custom); store.set('meta',state.meta);
+  store.set('progress',state.progress); store.set('overrides',state.overrides);
+  renderManage(); renderSidebar();
+}
+function addVerse(){
+  const n=($('newN').value||'').trim();
+  const s=($('newS').value||'').trim()||'+';
+  const ref=($('newRefEn').value||'').trim();
+  const refK=($('newRefKo').value||'').trim();
+  if(!n){ alert('번호를 입력해 주세요. 예) 9.1'); return; }
+  const key='c'+Date.now()+Math.floor(Math.random()*1000);
+  state.custom.push({key,n,s,ref,refK,t:'',tK:''});
+  state.order.push(key);
+  store.set('custom',state.custom); store.set('order',state.order);
+  ['newN','newS','newRefEn','newRefKo'].forEach(id=>{ const el=$(id); if(el) el.value=''; });
+  renderManage(); renderSidebar();
+}
+function resetOrder(){
+  if(!confirm('구절 순서·번호·구간을 원래대로 되돌리고, 직접 추가한 구절은 모두 삭제합니다.\n암송 진행 기록은 그대로 유지됩니다. 계속할까요?')) return;
+  state.order=VERSES.map(v=>v.key); state.custom=[]; state.meta={};
+  store.set('order',state.order); store.set('custom',state.custom); store.set('meta',state.meta);
+  renderManage(); renderSidebar();
+}
+function renderManage(){
+  const list=LIST();
+  const secSeen=[...new Set(list.map(v=>v.s))];
+  let dl='<datalist id="secOptions">'+SECTIONS.map(s=>'<option value="'+esc(s.key)+'">').join('')+secSeen.filter(s=>!SECTIONS.some(x=>x.key===s)).map(s=>'<option value="'+esc(s)+'">').join('')+'</datalist>';
+  const rows=list.map((v,i)=>{
+    let r='<div class="mrow" data-key="'+v.key+'">';
+    r+='<div class="mrow-arrows"><button class="mv-up" '+(i===0?'disabled':'')+' title="위로">\u25B2</button><button class="mv-down" '+(i===list.length-1?'disabled':'')+' title="아래로">\u25BC</button></div>';
+    r+='<input class="mrow-n" data-f="n" value="'+esc(v.n)+'" placeholder="번호">';
+    r+='<input class="mrow-s" data-f="s" value="'+esc(v.s)+'" list="secOptions" placeholder="구간">';
+    r+='<input class="mrow-ref" data-f="ref" value="'+esc((v.ref||'').replace(/ (ESV|NIV)$/,''))+'" placeholder="영어 장절">';
+    r+='<input class="mrow-refk" data-f="refK" value="'+esc(v.refK||'')+'" placeholder="한국어 장절">';
+    r+='<button class="mrow-del" title="삭제">삭제</button></div>';
+    return r;
+  }).join('');
+  let html='<h3>구절 관리</h3>';
+  html+='<p>번호·구간·장절을 고치거나 \u25B2\u25BC로 순서를 바꿀 수 있습니다. 본문(영어·한국어)은 각 구절 화면의 <b style="color:var(--gold-soft)">정답 수정</b>에서 입력합니다.</p>';
+  html+=dl;
+  html+='<div class="mrow-list">'+(rows||'<div style="color:var(--muted);font-size:12.5px;padding:12px 0">표시할 구절이 없습니다.</div>')+'</div>';
+  html+='<div class="add-form"><input class="afn" id="newN" placeholder="번호 예) 9.1"><input class="afs" id="newS" placeholder="구간" list="secOptions">';
+  html+='<input class="afref" id="newRefEn" placeholder="영어 장절 예) Psalm 1:1"><input class="afref" id="newRefKo" placeholder="한국어 장절 예) 시편 1:1">';
+  html+='<button id="addVerseBtn">+ 구절 추가</button></div>';
+  html+='<div class="manage-foot"><button class="danger" id="resetOrderBtn">전체 초기화</button><button class="btn btn-ghost" id="manageCloseBtn">닫기</button></div>';
+  $('manageModal').innerHTML=html;
+  $('manageModal').querySelectorAll('.mv-up').forEach(b=>{ if(!b.disabled) b.onclick=e=>moveOrder(e.currentTarget.closest('.mrow').dataset.key,-1); });
+  $('manageModal').querySelectorAll('.mv-down').forEach(b=>{ if(!b.disabled) b.onclick=e=>moveOrder(e.currentTarget.closest('.mrow').dataset.key,1); });
+  $('manageModal').querySelectorAll('.mrow-del').forEach(b=>{ b.onclick=e=>deleteVerse(e.currentTarget.closest('.mrow').dataset.key); });
+  $('manageModal').querySelectorAll('.mrow input').forEach(inp=>{
+    inp.onchange=e=>{ const row=e.currentTarget.closest('.mrow'); setMeta(row.dataset.key, e.currentTarget.dataset.f, e.currentTarget.value.trim()); };
+  });
+  $('addVerseBtn').onclick=addVerse;
+  $('resetOrderBtn').onclick=resetOrder;
+  $('manageCloseBtn').onclick=closeManage;
+}
+
+/* ===== READING (TTS) ===== */
+let utter=null;
+const ttsOK=typeof window!=='undefined' && 'speechSynthesis' in window;
+function renderReading(v){
+  const koCls=isKo()?' ko':'';
+  const list=LIST();
+  const body=(answerBody(v)||'').trim();
+  const bodyHtml = body
+    ? body.split(/(\s+)/).map(t=> t.trim()==='' ? t : ('<span class="rw">'+esc(t)+'</span>')).join('')
+    : '<span class="read-empty">본문이 없어 건너뜁니다…</span>';
+  let html='';
+  html+='<div class="card-head"><span class="num-badge">'+esc(v.n)+'</span>';
+  html+='<div class="head-meta"><div class="head-kicker">낭독 중 · '+(isKo()?'현대인의 성경':(verVersion(v)||'\u00A0'))+'</div><div class="head-pos">'+(state.idx+1)+' / '+list.length+'</div></div></div>';
+  html+='<div class="read-wrap">';
+  html+='<div class="rate-seg" id="rateSeg"><span class="rl">속도</span>'+RATES.map(o=>'<button data-r="'+o.r+'" class="'+(Math.abs(o.r-state.rate)<0.001?'on':'')+'">'+o.l+'</button>').join('')+'</div>';
+  html+='<label class="echo-toggle'+(state.echo?' on':'')+'" id="echoToggle"><span class="box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span>따라 읽기 채점 (읽은 뒤 마이크로 따라 말하기)</label>';
+  html+='<div class="read-ref" id="readRef">'+esc(answerRef(v))+'</div>';
+  html+='<div class="read-body'+koCls+'" id="readBody">'+bodyHtml+'</div>';
+  html+='<div class="read-pulse"><i></i> 낭독 중</div></div>';
+  html+='<div class="actions" style="justify-content:center;margin-top:24px">';
+  html+='<button class="btn btn-primary" id="stopReadBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="6" width="12" height="12" rx="1.5"/></svg>낭독 정지</button>';
+  html+='<button class="btn btn-ghost" id="readPrevBtn">\u25C1 이전</button><button class="btn btn-ghost" id="readNextBtn">다음 \u25B7</button></div>';
+  $('card').innerHTML=html;
+  $('stopReadBtn').onclick=stopReading;
+  $('readPrevBtn').onclick=()=>readJump(-1);
+  $('readNextBtn').onclick=()=>readJump(1);
+  const et=$('echoToggle'); if(et) et.onclick=()=>{ state.echo=!state.echo; et.classList.toggle('on',state.echo); store.set('echo',state.echo); };
+  const rs=$('rateSeg'); if(rs) rs.querySelectorAll('button').forEach(b=>{ b.onclick=()=>{ state.rate=parseFloat(b.dataset.r); store.set('rate',state.rate); rs.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b)); }; });
+  renderSidebar();
+}
+function revealReading(idx){
+  const sp=$('readBody'); if(!sp)return;
+  const ws=sp.querySelectorAll('.rw');
+  ws.forEach((el,i)=>{ el.classList.toggle('on',i<=idx); el.classList.toggle('cur',i===idx); });
+}
+function speakableRef(v){
+  if(isKo()){
+    return answerRef(v).replace(/(\d+):(\d+)(?:[-\u2013](\d+))?/,(m,ch,vs,ve)=> ve?(ch+'장 '+vs+'절에서 '+ve+'절'):(ch+'장 '+vs+'절'));
+  }
+  let r=answerRef(v);
+  r=r.replace(/^([123])\s+/,(m,d)=>({'1':'first ','2':'second ','3':'third '}[d]));
+  r=r.replace(/(\d+):(\d+)(?:[-\u2013](\d+))?/,(m,ch,vs,ve)=> ve?('chapter '+ch+' verse '+vs+' to '+ve):('chapter '+ch+' verse '+vs));
+  return r;
+}
+function clearReadTimers(){
+  if(state._fb){clearInterval(state._fb);state._fb=null;}
+  if(state._gap){clearTimeout(state._gap);state._gap=null;}
+}
+function nextAfterGap(){
+  state._gap=setTimeout(()=>{
+    state._gap=null;
+    if(!state.reading)return;
+    const list=LIST();
+    if(state.idx<list.length-1){ state.idx++; store.set('lastIdx',state.idx); speakCurrent(); }
+    else stopReading();
+  }, READ_GAP);
+}
+
+/* ===== 따라읽기 채점 (음성 인식) ===== */
+let recog=null;
+const SR = (typeof window!=='undefined') && (window.SpeechRecognition||window.webkitSpeechRecognition);
+function stopRecog(){ try{ if(recog){ recog.onend=null; recog.onresult=null; recog.onerror=null; recog.stop(); } }catch(e){} recog=null; }
+function updateListenLive(t){ const b=$('heardBox'); if(b) b.textContent=t; }
+function renderListen(v){
+  const koCls=isKo()?' ko':'';
+  const list=LIST();
+  let html='';
+  html+='<div class="card-head"><span class="num-badge">'+esc(v.n)+'</span>';
+  html+='<div class="head-meta"><div class="head-kicker">따라 말하기 · '+(isKo()?'현대인의 성경':(verVersion(v)||'\u00A0'))+'</div><div class="head-pos">'+(state.idx+1)+' / '+list.length+'</div></div></div>';
+  html+='<div class="read-wrap"><div class="read-ref">'+esc(answerRef(v))+'</div>';
+  html+='<div class="mic-wrap"><div class="mic-dot"><span class="ring"></span> 듣는 중 · 따라 말하세요</div>';
+  html+='<div class="heard'+koCls+'" id="heardBox">'+esc(state._heard||'')+'</div></div></div>';
+  html+='<div class="actions" style="justify-content:center;margin-top:24px">';
+  html+='<button class="btn btn-primary" id="doneSpeakBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>말하기 끝 · 채점</button>';
+  html+='<button class="btn btn-ghost" id="skipSpeakBtn">건너뛰기</button><button class="btn btn-ghost" id="stopReadBtn">낭독 정지</button></div>';
+  $('card').innerHTML=html;
+  $('doneSpeakBtn').onclick=stopListeningAndGrade;
+  $('skipSpeakBtn').onclick=()=>{ stopRecog(); state.listening=false; state.readPhase='read'; state._heard=''; const l=LIST(); if(state.idx<l.length-1){state.idx++;store.set('lastIdx',state.idx);speakCurrent();}else stopReading(); };
+  $('stopReadBtn').onclick=stopReading;
+  renderSidebar();
+}
+function startListening(){
+  if(!SR){
+    alert('이 브라우저는 음성 인식(따라읽기 채점)을 지원하지 않습니다.\n\nAndroid Chrome에서 열면 사용할 수 있습니다. 우선 따라읽기 없이 낭독을 계속합니다.');
+    state.echo=false; nextAfterGap(); return;
+  }
+  state._heard=''; state.listening=true; state.readPhase='listen';
+  const list=LIST();
+  renderListen(list[state.idx]);
+  recog=new SR();
+  recog.lang=isKo()?'ko-KR':'en-US';
+  recog.continuous=true; recog.interimResults=true;
+  recog.onresult=(e)=>{
+    let fin='',interim='';
+    for(let i=0;i<e.results.length;i++){
+      const tr=e.results[i][0].transcript;
+      if(e.results[i].isFinal) fin+=tr+' '; else interim+=tr;
+    }
+    state._heard=(fin+interim).replace(/\s+/g,' ').trim();
+    updateListenLive(state._heard);
+  };
+  recog.onerror=(e)=>{
+    const err=e&&e.error;
+    if(err==='not-allowed'||err==='service-not-allowed'){
+      state.listening=false; stopRecog();
+      alert('마이크 사용이 허용되지 않았습니다.\n주소창의 자물쇠 아이콘 → 마이크 권한을 "허용"으로 바꾼 뒤 다시 시도해 주세요.');
+      if(state.reading) stopReading();
+    }
+  };
+  recog.onend=()=>{ if(state.listening) stopListeningAndGrade(); };
+  try{ recog.start(); }catch(e){}
+}
+function stopListeningAndGrade(){
+  if(!state.listening)return;
+  state.listening=false;
+  stopRecog();
+  const list=LIST(); const v=list[state.idx];
+  const heard=(state._heard||'').trim();
+  const r=grade(answerBody(v), heard, state.settings);
+  const p=prog()[v.key]||{best:0,attempts:0}; p.attempts+=1; p.best=Math.max(p.best,r.acc); prog()[v.key]=p;
+  store.set('progress',state.progress);
+  state._echoResult={r,heard};
+  state.readPhase='result';
+  renderEchoResult(v); renderSidebar();
+}
+function renderEchoResult(v){
+  const rObj=state._echoResult, r=rObj.r, heard=rObj.heard, koCls=isKo()?' ko':'';
+  const list=LIST();
+  const perfect=r.acc>=100;
+  const tag=perfect?'완벽하게 외우셨어요':(r.acc>=85?'거의 정확해요':(r.acc>=60?'조금 더':'다시 들어볼까요'));
+  const col=perfect?'var(--correct)':(r.acc>=60?'var(--gold-soft)':'var(--wine)');
+  const heardLine = r.ops.map(o=>o.t==='eq'?('<span class="w w-correct">'+esc(o.b)+'</span>'):o.t==='extra'?('<span class="w w-extra">'+esc(o.b)+'</span>'):'').filter(Boolean).join(' ')
+    || '<span style="color:var(--muted2);font-style:italic">— 들린 말이 없습니다 —</span>';
+  let html='';
+  html+='<div class="card-head"><span class="num-badge">'+esc(v.n)+'</span>';
+  html+='<div class="head-meta"><div class="head-kicker">따라읽기 결과 · '+(isKo()?'현대인의 성경':(verVersion(v)||'\u00A0'))+'</div><div class="head-pos">'+(state.idx+1)+' / '+list.length+'</div></div></div>';
+  html+='<div class="read-wrap"><div class="read-ref">'+esc(answerRef(v))+'</div></div>';
+  html+='<div class="result" style="margin-top:8px;border-top:none;padding-top:4px"><div class="score-row">';
+  html+='<div class="score-num" style="color:'+col+'">'+r.acc+'<small>%</small></div>';
+  html+='<div class="score-meta"><div class="score-tag" style="color:'+col+'">'+tag+'</div>';
+  html+='<div class="score-stats"><span class="s-ok"><b>'+r.correct+'</b> 정확</span>';
+  html+=(r.miss?('<span class="s-bad"><b>'+r.miss+'</b> 누락</span>'):'');
+  html+=(r.extra?('<span class="s-bad"><b>'+r.extra+'</b> 잘못</span>'):'');
+  html+='<span class="s-gold">총 <b>'+r.total+'</b>단어</span></div></div></div>';
+  html+='<div class="diff-block"><div class="diff-label">내가 말한 내용 (들린 대로)</div><div class="diff-text'+koCls+'">'+heardLine+'</div></div>';
+  if(!perfect){
+    html+='<div class="diff-block diff-answer"><div class="diff-label">정답 · 빨강은 빠뜨린 단어</div><div class="diff-text'+koCls+'">';
+    html+=r.ops.map(o=>o.t==='eq'?('<span class="w w-eq">'+esc(o.a)+'</span>'):o.t==='miss'?('<span class="w w-miss">'+esc(o.a)+'</span>'):'').filter(Boolean).join(' ');
+    html+='</div></div>';
+  }
+  html+='<div class="result-actions"><button class="btn btn-ghost" id="echoRetryBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>다시 말하기</button>';
+  html+=(state.idx<list.length-1?('<button class="btn '+(perfect?'btn-gold':'btn-primary')+'" id="echoNextBtn">다음 구절 \u25B7</button>'):'');
+  html+='<button class="btn btn-ghost" id="stopReadBtn">낭독 정지</button></div></div>';
+  $('card').innerHTML=html;
+  $('echoRetryBtn').onclick=()=>{ state._echoResult=null; startListening(); };
+  const nb=$('echoNextBtn'); if(nb) nb.onclick=()=>{ state._echoResult=null; state.readPhase='read'; state.idx++; store.set('lastIdx',state.idx); speakCurrent(); };
+  $('stopReadBtn').onclick=stopReading;
+  renderSidebar();
+}
+function pickVoice(){
+  const vs=(speechSynthesis.getVoices()||[]);
+  if(isKo()) return vs.find(v=>(v.lang||'').toLowerCase().startsWith('ko'))||null;
+  const lc=v=>(v.lang||'').toLowerCase().replace('_','-');
+  return vs.find(v=>lc(v)==='en-us')
+      || vs.find(v=>lc(v).startsWith('en-us'))
+      || vs.find(v=>/\bus\b|united states|américa|america/i.test(v.name||'') && lc(v).startsWith('en'))
+      || vs.find(v=>lc(v).startsWith('en'))
+      || null;
+}
+function speakCurrent(){
+  if(!state.reading)return;
+  clearReadTimers();
+  const list=LIST(); const v=list[state.idx];
+  const body=(answerBody(v)||'').trim();
+  renderReading(v);
+  if(!body){ nextAfterGap(); return; }
+  speakRef(v, ()=>{ if(state.reading) speakBody(v, body); });
+}
+function speakRef(v, done){
+  const num = v.n.charAt(0)==='+' ? '' : (isKo()? (v.n+'번. ') : ('number '+v.n+'. '));
+  const text=num+speakableRef(v);
+  const rr=$('readRef'); if(rr) rr.classList.add('reading-now');
+  if(!text){ if(rr)rr.classList.remove('reading-now'); done(); return; }
+  const u=new SpeechSynthesisUtterance(text);
+  const vo=pickVoice(); u.lang=isKo()?'ko-KR':'en-US'; if(vo)u.voice=vo; u.rate=state.rate;
+  const fin=()=>{
+    if(rr)rr.classList.remove('reading-now');
+    if(state.reading){ state._gap=setTimeout(()=>{ state._gap=null; if(state.reading) done(); }, REF_GAP); }
+  };
+  u.onend=fin; u.onerror=fin;
+  utter=u;
+  try{ speechSynthesis.speak(u); }catch(e){ fin(); }
+}
+function speakBody(v, body){
+  const starts=[]; let m; const re=/\S+/g;
+  while((m=re.exec(body))) starts.push(m.index);
+  utter=new SpeechSynthesisUtterance(body);
+  const vo=pickVoice();
+  utter.lang=isKo()?'ko-KR':'en-US';
+  if(vo)utter.voice=vo;
+  utter.rate=state.rate; utter.pitch=1;
+  let boundaryFired=false;
+  utter.onboundary=(e)=>{
+    if(e.charIndex==null)return;
+    boundaryFired=true;
+    if(state._fb){clearInterval(state._fb);state._fb=null;}
+    let idx=0; for(let i=0;i<starts.length;i++){ if(e.charIndex>=starts[i]) idx=i; else break; }
+    revealReading(idx);
+  };
+  utter.onend=()=>{
+    if(!state.reading)return;
+    if(state._fb){clearInterval(state._fb);state._fb=null;}
+    revealReading(starts.length-1);
+    if(state.echo) state._gap=setTimeout(()=>{ state._gap=null; if(state.reading) startListening(); }, 600);
+    else nextAfterGap();
+  };
+  utter.onerror=(ev)=>{
+    if(!state.reading)return;
+    const why=(ev&&ev.error)?ev.error:'unknown';
+    stopReading();
+    setTimeout(()=>alert('음성 재생이 차단되었습니다 ('+why+').\n\n· 기기 음량과 무음 모드를 확인해 주세요.\n· Claude 앱 안에서 보고 있다면, 이 파일을 Chrome·Safari 같은 실제 브라우저에서 열면 대부분 해결됩니다.'),60);
+  };
+  try{ speechSynthesis.speak(utter); }catch(e){ stopReading(); return; }
+  setTimeout(()=>{
+    if(!state.reading||boundaryFired)return;
+    const per=(isKo()?280:235)/(utter.rate||1);
+    let i=0;
+    state._fb=setInterval(()=>{
+      if(!state.reading){clearInterval(state._fb);state._fb=null;return;}
+      revealReading(i); i++;
+      if(i>=starts.length){clearInterval(state._fb);state._fb=null;}
+    }, per);
+  }, 320);
+}
+function startReading(){
+  if(!ttsOK){ alert('이 브라우저는 음성 읽기를 지원하지 않습니다.'); return; }
+  const list=LIST();
+  if(!list.length){ alert('낭독할 구절이 없습니다.'); return; }
+  if(isKo() && list.every(v=>!(answerBody(v)||'').trim())){
+    alert('한국어(현대인의 성경) 본문이 아직 없어 읽을 내용이 없습니다.\n본문을 입력하거나 EN(영어)으로 전환해 주세요.');
+    return;
+  }
+  state.reading=true; state.graded=false; state.editing=false;
+  updateSpeakBtn();
+  renderReading(list[state.idx]);
+  const begin=()=>{ if(state.reading) speakCurrent(); };
+  const vs=speechSynthesis.getVoices();
+  if(vs && vs.length){ begin(); }
+  else {
+    let started=false;
+    const go=()=>{ if(started)return; started=true; try{speechSynthesis.onvoiceschanged=null;}catch(e){} begin(); };
+    try{ speechSynthesis.onvoiceschanged=go; }catch(e){}
+    setTimeout(go, 400);
+  }
+}
+function stopReading(){
+  state.reading=false; state.listening=false; state.readPhase='read'; state._echoResult=null; state._heard='';
+  clearReadTimers(); stopRecog();
+  try{ speechSynthesis.cancel(); }catch(e){}
+  updateSpeakBtn();
+  renderCard();
+}
+function readJump(d){
+  const list=LIST();
+  const ni=state.idx+d;
+  if(ni<0||ni>=list.length)return;
+  clearReadTimers(); stopRecog();
+  state.listening=false; state.readPhase='read'; state._echoResult=null; state._heard='';
+  try{ speechSynthesis.cancel(); }catch(e){}
+  state.idx=ni; store.set('lastIdx',ni);
+  speakCurrent();
+}
+function updateSpeakBtn(){
+  const b=$('speakBtn'); if(!b)return;
+  b.classList.toggle('on',state.reading);
+  $('speakLabel').textContent=state.reading?'정지':'낭독';
+}
+
+/* ===== MUSIC (사용자가 고른 mp3 배경 재생) ===== */
+let bgAudio=null, musicLoaded=false;
+function updateMusicUI(playing){
+  const pb=$('musicPlay'), mb=$('musicBtn');
+  if(pb){ pb.classList.toggle('play',playing);
+    pb.innerHTML = playing
+      ? '<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg>정지'
+      : '<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="6 4 20 12 6 20 6 4"/></svg>재생';
+  }
+  if(mb){ mb.classList.toggle('on',playing); $('musicLabel').textContent=playing?'음악 \u266A':'음악'; }
+}
+function initMusic(){
+  bgAudio=$('bgAudio'); if(!bgAudio)return;
+  bgAudio.volume=0.35;
+  const showErr=(err)=>{
+    updateMusicUI(false);
+    alert('음악을 재생할 수 없습니다'+(err&&err.name?(' ('+err.name+')'):'')+'.\n\n· 고른 파일이 mp3·m4a 등 표준 오디오인지 확인해 주세요.\n· Claude 앱 안에서 보고 있다면, 이 파일을 Chrome 같은 실제 브라우저에서 열어 주세요.\n· 기기 음량과 무음(진동) 모드도 확인해 주세요.');
+  };
+  const play=()=> bgAudio.play().then(()=>updateMusicUI(true));
+  const loadFile=(f)=>{
+    try{ if(bgAudio.dataset.url) URL.revokeObjectURL(bgAudio.dataset.url); }catch(_){}
+    const url=URL.createObjectURL(f); bgAudio.dataset.url=url; bgAudio.src=url;
+    musicLoaded=true; $('musicName').textContent=f.name;
+    play().catch(()=>{ $('musicName').textContent=f.name+' — \u25B6 재생을 눌러 시작'; });
+  };
+  $('musicBtn').onclick=()=>{
+    $('musicBar').classList.add('show');
+    if(!musicLoaded){ $('musicFile').click(); return; }
+    if(bgAudio.paused) play().catch(showErr); else { bgAudio.pause(); updateMusicUI(false); }
+  };
+  $('musicPick').onclick=()=>$('musicFile').click();
+  $('musicFile').onchange=(e)=>{ const f=e.target.files&&e.target.files[0]; if(f) loadFile(f); };
+  $('musicPlay').onclick=()=>{
+    if(!musicLoaded){ $('musicFile').click(); return; }
+    if(bgAudio.paused) play().catch(showErr); else { bgAudio.pause(); updateMusicUI(false); }
+  };
+  $('musicVol').oninput=(e)=>{ bgAudio.volume=(e.target.value||0)/100; };
+  bgAudio.onplay=()=>updateMusicUI(true);
+  bgAudio.onpause=()=>updateMusicUI(false);
+  bgAudio.onended=()=>updateMusicUI(false);
+}
+
+/* ===== BIND ===== */
+function bindCard(){
+  const list=LIST();
+  const ta=$('ta');
+  if(ta){ta.focus();const l=ta.value.length;ta.setSelectionRange(l,l);
+    ta.oninput=()=>{state.draft=ta.value;};
+    ta.onkeydown=e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();doCheck();}};
+  }
+  const ri=$('refIn'); if(ri){ ri.oninput=()=>{state.draftRef=ri.value;};
+    ri.onkeydown=e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();doCheck();}}; }
+  const cb=$('checkBtn'); if(cb)cb.onclick=doCheck;
+  const hb=$('hintBtn'); if(hb)hb.onclick=()=>{state.showHint=!state.showHint;renderCard();};
+  const rh=$('refHintBtn'); if(rh)rh.onclick=()=>{state.showRefHint=!state.showRefHint;renderCard();};
+  const eb=$('editBtn'); if(eb)eb.onclick=()=>{state.editing=true;renderCard();};
+  const nb=$('nextBtn'); if(nb)nb.onclick=()=>goTo(Math.min(list.length-1,state.idx+1));
+  const sk=$('skipBtn'); if(sk)sk.onclick=()=>goTo(Math.min(list.length-1,state.idx+1));
+  const rb=$('retryBtn'); if(rb)rb.onclick=()=>{state.graded=false;state.result=null;state.refResult=null;state.draft='';state.draftRef='';renderCard();};
+}
+
+async function doCheck(){
+  const list=LIST(); const v=list[state.idx];
+  const input=(state.draft||'').trim();
+  if(!input){const ta=$('ta');if(ta){ta.style.borderColor='var(--wine)';setTimeout(()=>ta.style.borderColor='',600);}return;}
+  state.result=grade(answerBody(v),input,state.settings);
+  const ri=(state.draftRef||'').trim();
+  state.refResult={ok:ri&&normRef(ri)===normRef(answerRef(v)),input:ri};
+  state.graded=true;
+  const p=prog()[v.key]||{best:0,attempts:0};
+  p.attempts+=1;p.best=Math.max(p.best,state.result.acc);
+  prog()[v.key]=p;
+  await store.set('progress',state.progress);
+  await store.set('lastIdx',state.idx);
+  renderCard();renderSidebar();
+  document.querySelector('.stage').scrollTop=0;
+}
+
+function goTo(i){
+  if(state.reading){ state.reading=false; state.listening=false; state.readPhase='read'; state._echoResult=null; clearReadTimers(); stopRecog(); try{speechSynthesis.cancel();}catch(e){} updateSpeakBtn(); }
+  state.idx=i;state.graded=false;state.result=null;state.refResult=null;
+  state.draft='';state.draftRef='';state.showHint=false;state.showRefHint=false;state.editing=false;
+  store.set('lastIdx',i);renderCard();renderSidebar();
+  document.querySelector('.stage').scrollTop=0;
+}
+
+/* ===== LANG / SETTINGS / UI ===== */
+async function setLang(l){
+  if(state.lang===l)return;
+  if(state.reading){ state.reading=false; state.listening=false; state.readPhase='read'; state._echoResult=null; clearReadTimers(); stopRecog(); try{speechSynthesis.cancel();}catch(e){} updateSpeakBtn(); }
+  state.lang=l;state.graded=false;state.result=null;state.refResult=null;
+  state.draft='';state.draftRef='';state.showHint=false;state.showRefHint=false;state.editing=false;
+  await store.set('lang',l);
+  $('langEn').classList.toggle('on',l==='en');
+  $('langKo').classList.toggle('on',l==='ko');
+  render();
+}
+function syncSettingUI(){
+  $('tCase').classList.toggle('on',state.settings.caseS);
+  $('tPunct').classList.toggle('on',state.settings.punct);
+  $('swCase').classList.toggle('on',state.settings.caseS);
+  $('swPunct').classList.toggle('on',state.settings.punct);
+}
+async function regradeToggle(key){
+  state.settings[key]=!state.settings[key];
+  await store.set('settings',state.settings);syncSettingUI();
+  if(state.graded){const list=LIST();const v=list[state.idx];state.result=grade(answerBody(v),(state.draft||'').trim(),state.settings);renderCard();}
+}
+function openSidebar(){$('sidebar').classList.add('open');$('scrim').classList.add('show');}
+function closeSidebar(){$('sidebar').classList.remove('open');if(!$('modal').classList.contains('show')&&!$('manageModal').classList.contains('show'))$('scrim').classList.remove('show');}
+function openModal(){$('modal').classList.add('show');$('scrim').classList.add('show');}
+function closeModal(){$('modal').classList.remove('show');if(!$('sidebar').classList.contains('open')&&!$('manageModal').classList.contains('show'))$('scrim').classList.remove('show');}
+
+/* ===== INIT ===== */
+function migrateKV(obj){
+  // 과거 버전 호환: 예전엔 진행기록/정답수정이 번호(n) 기준으로 저장되었을 수 있음 → key 기준으로 이전
+  if(!obj) return {en:{},ko:{}};
+  const src = (obj.en||obj.ko) ? obj : {en:obj,ko:{}};
+  const out={en:{},ko:{}};
+  ['en','ko'].forEach(l=>{
+    const o=src[l]||{};
+    Object.keys(o).forEach(k=>{ out[l][N2KEY[k]||k]=o[k]; });
+  });
+  return out;
+}
+async function init(){
+  const results = await Promise.all([
+    store.get('progress'),store.get('overrides'),store.get('settings'),store.get('lastIdx'),
+    store.get('lang'),store.get('echo'),store.get('rate'),
+    store.get('order'),store.get('custom'),store.get('meta')
+  ]);
+  const pg=results[0],ov=results[1],st=results[2],li=results[3],lg=results[4],ec=results[5],rt=results[6],ordS=results[7],cus=results[8],mt=results[9];
+  state.custom = Array.isArray(cus) ? cus : [];
+  state.meta = (mt && typeof mt==='object') ? mt : {};
+  state.order = (Array.isArray(ordS) && ordS.length) ? ordS.slice() : VERSES.map(v=>v.key);
+  normalizeOrder();
+
+  if(ec===true) state.echo=true;
+  if(typeof rt==='number'&&rt>0.4&&rt<2) state.rate=rt;
+  state.progress=migrateKV(pg); state.overrides=migrateKV(ov);
+  if(st)state.settings=st;
+  const list=LIST();
+  if(typeof li==='number'&&li>=0&&li<list.length)state.idx=li;
+  if(lg==='ko'||lg==='en')state.lang=lg;
+  $('langEn').classList.toggle('on',state.lang==='en');
+  $('langKo').classList.toggle('on',state.lang==='ko');
+  syncSettingUI();render();
+
+  $('menuBtn').onclick=openSidebar;
+  $('scrim').onclick=()=>{closeSidebar();closeModal();closeManage();};
+  $('setBtn').onclick=openModal;$('modalClose').onclick=closeModal;
+  $('manageBtn').onclick=openManage;
+  $('langEn').onclick=()=>setLang('en');$('langKo').onclick=()=>setLang('ko');
+  $('speakBtn').onclick=()=>{ state.reading?stopReading():startReading(); };
+  updateSpeakBtn();
+  initMusic();
+  $('tCase').onclick=()=>regradeToggle('caseS');$('tPunct').onclick=()=>regradeToggle('punct');
+  $('swCase').onclick=()=>regradeToggle('caseS');$('swPunct').onclick=()=>regradeToggle('punct');
+  $('resetBtn').onclick=async()=>{
+    if(!confirm((isKo()?'한국어':'영어')+' 진행 기록을 모두 지웁니다. 본문 수정 내용은 유지됩니다. 계속할까요?'))return;
+    state.progress[state.lang]={};await store.set('progress',state.progress);closeModal();render();
+  };
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape'){closeSidebar();closeModal();closeManage();if(state.reading)stopReading();if(state.editing){state.editing=false;renderCard();}}
+    if(state.graded&&e.key==='Enter'&&!e.ctrlKey&&!e.metaKey&&document.activeElement.tagName!=='TEXTAREA'&&document.activeElement.tagName!=='INPUT'){
+      const nb=$('nextBtn');if(nb){e.preventDefault();nb.click();}
+    }
+  });
+}
+function render(){renderSidebar();renderCard();}
+init();
+</script>
+</body>
+</html>
