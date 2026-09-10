@@ -1047,6 +1047,11 @@ function updateSpeakBtn(){
    내장 곡은 저장소의 music/ 폴더에 있다. 곡을 추가하려면 파일을 music/에 넣고 아래 목록에 한 줄 추가하면 된다.
 */
 const BUILTIN_MUSIC=[
+  {label:'CCM 1 · 00', src:'music/CCM1_00.mp3'},
+  {label:'CCM 1 · 02', src:'music/CCM1_02.mp3'},
+  {label:'CCM 1 · 03', src:'music/CCM1_03.mp3'},
+  {label:'CCM 1 · 04', src:'music/CCM1_04.mp3'},
+  {label:'CCM 1 · 05', src:'music/CCM1_05.mp3'},
   {label:'CCM 6 · 00', src:'music/CCM6_00.mp3'},
   {label:'CCM 6 · 01', src:'music/CCM6_01.mp3'},
   {label:'CCM 6 · 05', src:'music/CCM6_05.mp3'},
@@ -1078,7 +1083,7 @@ function initMusic(){
     const m=BUILTIN_MUSIC[i]; if(!m) return;
     revokeObj(); musicIdx=i; sel.value=String(i);
     bgAudio.loop=false; bgAudio.src=m.src; musicLoaded=true;
-    $('musicName').textContent=m.label; lsSet('music',i);
+    $('musicName').textContent=m.label; lsSet('music',m.src);
     if(autoplay!==false) play().catch(()=>{ $('musicName').textContent=m.label+' \u2014 \u25B6 재생을 눌러 시작'; });
   };
   const loadFile=(f)=>{
@@ -1087,7 +1092,8 @@ function initMusic(){
     musicLoaded=true; $('musicName').textContent=f.name;
     play().catch(()=>{ $('musicName').textContent=f.name+' \u2014 \u25B6 재생을 눌러 시작'; });
   };
-  const ensureLoaded=()=>{ if(musicLoaded) return true; const last=lsGet('music'); loadBuiltin(Number.isInteger(last)&&BUILTIN_MUSIC[last]?last:0); return false; };
+  const savedIdx=()=>{ const v=lsGet('music'); const i=BUILTIN_MUSIC.findIndex(m=>m.src===v); return i>=0?i:-1; };
+  const ensureLoaded=()=>{ if(musicLoaded) return true; const i=savedIdx(); loadBuiltin(i>=0?i:0); return false; };
   const toggle=()=>{ if(!ensureLoaded()) return; if(bgAudio.paused) play().catch(showErr); else { bgAudio.pause(); updateMusicUI(false); } };
   $('musicBtn').onclick=()=>{ $('musicBar').classList.add('show'); toggle(); };
   sel.onchange=(e)=>{ const i=parseInt(e.target.value,10); if(i>=0) loadBuiltin(i); };
@@ -1098,7 +1104,7 @@ function initMusic(){
   bgAudio.onplay=()=>updateMusicUI(true);
   bgAudio.onpause=()=>updateMusicUI(false);
   bgAudio.onended=()=>{ if(musicIdx>=0) loadBuiltin((musicIdx+1)%BUILTIN_MUSIC.length); else updateMusicUI(false); };
-  const last=lsGet('music'); if(Number.isInteger(last)&&BUILTIN_MUSIC[last]){ musicIdx=last; sel.value=String(last); }
+  const si=savedIdx(); if(si>=0){ musicIdx=si; sel.value=String(si); }
 }
 
 /* ===== BIND ===== */
