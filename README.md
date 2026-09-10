@@ -26,4 +26,5 @@
 ## 파일 구조
 
 - `index.html` — 앱 전체 (HTML + CSS + JS)
+- `music/` — 내장 배경음악 mp3. 곡을 추가하려면 파일을 여기에 넣고 `index.html`의 `BUILTIN_MUSIC` 목록에 한 줄 추가
 - `.github/workflows/pages.yml` — GitHub Pages 자동 배포 워크플로우

@@ -105,7 +105,10 @@ input{font-family:inherit}
 .music-vol{display:flex;align-items:center;gap:7px;color:var(--muted2)}
 .music-vol svg{width:15px;height:15px}
 .music-vol input[type=range]{width:88px;accent-color:var(--gold);cursor:pointer}
-@media(max-width:560px){.music-bar{padding:10px 14px;gap:9px}.music-name{flex-basis:100%;order:5}}
+.music-sel{font-family:inherit;font-size:12px;font-weight:600;color:var(--ink-soft);background:var(--surface2);border:1px solid var(--line);border-radius:8px;padding:7px 10px;max-width:190px;cursor:pointer;outline:none}
+.music-sel:hover,.music-sel:focus{border-color:var(--line2)}
+.music-sel option{background:var(--surface2);color:var(--ink)}
+@media(max-width:560px){.music-bar{padding:10px 14px;gap:9px}.music-name{flex-basis:100%;order:5}.music-sel{max-width:150px}}
 .read-empty{color:var(--muted2);font-style:italic;font-size:18px}
 .read-pulse{display:inline-flex;align-items:center;gap:5px;margin-top:22px;font-size:11.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--wine);font-weight:600}
 .read-pulse i{width:7px;height:7px;border-radius:50%;background:var(--wine);animation:pulse 1.1s ease-in-out infinite}
@@ -305,6 +308,7 @@ textarea.editor:disabled{opacity:1;color:var(--ink-soft)}
       </button>
     </div>
     <div class="music-bar" id="musicBar">
+      <select class="music-sel" id="musicSel" aria-label="내장 음악 선택"></select>
       <button class="mb-btn" id="musicPick">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
         파일 선택
@@ -334,7 +338,7 @@ textarea.editor:disabled{opacity:1;color:var(--ink-soft)}
 
 <div class="modal wide" id="manageModal"></div>
 
-<audio id="bgAudio" loop preload="auto"></audio>
+<audio id="bgAudio" preload="none"></audio>
 <input type="file" id="musicFile" accept="audio/*,.mp3" style="display:none">
 
 <script>
@@ -1039,8 +1043,17 @@ function updateSpeakBtn(){
   $('speakLabel').textContent=state.reading?'정지':'낭독';
 }
 
-/* ===== MUSIC (사용자가 고른 mp3 배경 재생) ===== */
-let bgAudio=null, musicLoaded=false;
+/* ===== MUSIC (내장 mp3 + 사용자가 고른 mp3 배경 재생) =====
+   내장 곡은 저장소의 music/ 폴더에 있다. 곡을 추가하려면 파일을 music/에 넣고 아래 목록에 한 줄 추가하면 된다.
+*/
+const BUILTIN_MUSIC=[
+  {label:'CCM 6 · 00', src:'music/CCM6_00.mp3'},
+  {label:'CCM 6 · 01', src:'music/CCM6_01.mp3'},
+  {label:'CCM 6 · 05', src:'music/CCM6_05.mp3'},
+  {label:'CCM 6 · 06', src:'music/CCM6_06.mp3'},
+  {label:'CCM 6 · 07', src:'music/CCM6_07.mp3'}
+];
+let bgAudio=null, musicLoaded=false, musicIdx=-1;
 function updateMusicUI(playing){
   const pb=$('musicPlay'), mb=$('musicBtn');
   if(pb){ pb.classList.toggle('play',playing);
@@ -1053,32 +1066,39 @@ function updateMusicUI(playing){
 function initMusic(){
   bgAudio=$('bgAudio'); if(!bgAudio)return;
   bgAudio.volume=0.35;
+  const sel=$('musicSel');
+  sel.innerHTML='<option value="-1">내장 음악 선택</option>'+BUILTIN_MUSIC.map((m,i)=>'<option value="'+i+'">'+m.label+'</option>').join('');
   const showErr=(err)=>{
     updateMusicUI(false);
     alert('음악을 재생할 수 없습니다'+(err&&err.name?(' ('+err.name+')'):'')+'.\n\n· 고른 파일이 mp3·m4a 등 표준 오디오인지 확인해 주세요.\n· Claude 앱 안에서 보고 있다면, 이 파일을 Chrome 같은 실제 브라우저에서 열어 주세요.\n· 기기 음량과 무음(진동) 모드도 확인해 주세요.');
   };
   const play=()=> bgAudio.play().then(()=>updateMusicUI(true));
+  const revokeObj=()=>{ try{ if(bgAudio.dataset.url){ URL.revokeObjectURL(bgAudio.dataset.url); delete bgAudio.dataset.url; } }catch(_){} };
+  const loadBuiltin=(i,autoplay)=>{
+    const m=BUILTIN_MUSIC[i]; if(!m) return;
+    revokeObj(); musicIdx=i; sel.value=String(i);
+    bgAudio.loop=false; bgAudio.src=m.src; musicLoaded=true;
+    $('musicName').textContent=m.label; lsSet('music',i);
+    if(autoplay!==false) play().catch(()=>{ $('musicName').textContent=m.label+' \u2014 \u25B6 재생을 눌러 시작'; });
+  };
   const loadFile=(f)=>{
-    try{ if(bgAudio.dataset.url) URL.revokeObjectURL(bgAudio.dataset.url); }catch(_){}
-    const url=URL.createObjectURL(f); bgAudio.dataset.url=url; bgAudio.src=url;
+    revokeObj(); musicIdx=-1; sel.value='-1';
+    const url=URL.createObjectURL(f); bgAudio.dataset.url=url; bgAudio.loop=true; bgAudio.src=url;
     musicLoaded=true; $('musicName').textContent=f.name;
-    play().catch(()=>{ $('musicName').textContent=f.name+' — \u25B6 재생을 눌러 시작'; });
+    play().catch(()=>{ $('musicName').textContent=f.name+' \u2014 \u25B6 재생을 눌러 시작'; });
   };
-  $('musicBtn').onclick=()=>{
-    $('musicBar').classList.add('show');
-    if(!musicLoaded){ $('musicFile').click(); return; }
-    if(bgAudio.paused) play().catch(showErr); else { bgAudio.pause(); updateMusicUI(false); }
-  };
+  const ensureLoaded=()=>{ if(musicLoaded) return true; const last=lsGet('music'); loadBuiltin(Number.isInteger(last)&&BUILTIN_MUSIC[last]?last:0); return false; };
+  const toggle=()=>{ if(!ensureLoaded()) return; if(bgAudio.paused) play().catch(showErr); else { bgAudio.pause(); updateMusicUI(false); } };
+  $('musicBtn').onclick=()=>{ $('musicBar').classList.add('show'); toggle(); };
+  sel.onchange=(e)=>{ const i=parseInt(e.target.value,10); if(i>=0) loadBuiltin(i); };
   $('musicPick').onclick=()=>$('musicFile').click();
   $('musicFile').onchange=(e)=>{ const f=e.target.files&&e.target.files[0]; if(f) loadFile(f); };
-  $('musicPlay').onclick=()=>{
-    if(!musicLoaded){ $('musicFile').click(); return; }
-    if(bgAudio.paused) play().catch(showErr); else { bgAudio.pause(); updateMusicUI(false); }
-  };
+  $('musicPlay').onclick=toggle;
   $('musicVol').oninput=(e)=>{ bgAudio.volume=(e.target.value||0)/100; };
   bgAudio.onplay=()=>updateMusicUI(true);
   bgAudio.onpause=()=>updateMusicUI(false);
-  bgAudio.onended=()=>updateMusicUI(false);
+  bgAudio.onended=()=>{ if(musicIdx>=0) loadBuiltin((musicIdx+1)%BUILTIN_MUSIC.length); else updateMusicUI(false); };
+  const last=lsGet('music'); if(Number.isInteger(last)&&BUILTIN_MUSIC[last]){ musicIdx=last; sel.value=String(last); }
 }
 
 /* ===== BIND ===== */
