@@ -655,25 +655,42 @@ function renderCard(){
 }
 
 function renderEdit(v){
-  const cur=answerBody(v), koCls=isKo()?' ko':'';
+  const cur=answerBody(v), curRef=answerRef(v), koCls=isKo()?' ko':'';
+  const refField=isKo()?'refK':'ref', ver=isKo()?'':verVersion(v);
   let html='';
   html+='<div class="card-head"><span class="num-badge">'+esc(v.n)+'</span>';
-  html+='<div class="head-meta"><div class="head-kicker">'+(isKo()?'현대인의 성경':verVersion(v))+'</div><div class="head-pos">'+esc(answerRef(v))+' · 본문 수정</div></div></div>';
-  html+='<div class="prompt">채점 기준이 되는 '+(isKo()?'한국어(현대인의 성경)':'영어(ESV)')+' 본문입니다. 직접 입력하거나 고칠 수 있습니다.</div>';
+  html+='<div class="head-meta"><div class="head-kicker">'+(isKo()?'현대인의 성경':ver)+'</div><div class="head-pos">'+esc(curRef)+' · 정답 수정</div></div></div>';
+  html+='<div class="prompt">채점 기준이 되는 '+(isKo()?'한국어(현대인의 성경)':'영어(ESV)')+' 장절과 본문입니다. 직접 입력하거나 고칠 수 있습니다.</div>';
+  html+='<div class="ref-row"><span class="ref-tag">장절</span>';
+  html+='<input class="ref-input" id="editRef" placeholder="'+(isKo()?'예) 시편 56:3':'e.g. Psalm 56:3')+'" value="'+esc(curRef)+'" spellcheck="false" autocomplete="off">';
+  if(ver) html+='<span class="ref-tag">'+esc(ver)+'</span>';
+  html+='</div>';
   html+='<div class="editor-wrap"><textarea class="editor'+koCls+'" id="editTa" spellcheck="false" placeholder="'+(isKo()?'현대인의 성경 본문을 입력…':'Enter verse text…')+'">'+esc(cur)+'</textarea></div>';
-  html+='<div class="edit-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg>수정 내용은 이 기기에 '+(isKo()?'한국어':'영어')+' 본문으로 저장됩니다.</div>';
+  html+='<div class="edit-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg>수정 내용은 이 기기에 '+(isKo()?'한국어':'영어')+' 장절·본문으로 저장됩니다.</div>';
   html+='<div class="actions"><button class="btn btn-primary" id="saveEditBtn">저장</button><button class="btn btn-ghost" id="cancelEditBtn">취소</button>';
-  html+=(state.overrides[state.lang][v.key]!=null?'<button class="btn btn-ghost" id="revertBtn" style="color:var(--wine)">원본으로 되돌리기</button>':'')+'</div>';
+  const hasRefMeta=!!(baseByKey(v.key)&&state.meta[v.key]&&state.meta[v.key][refField]!=null);
+  html+=((state.overrides[state.lang][v.key]!=null||hasRefMeta)?'<button class="btn btn-ghost" id="revertBtn" style="color:var(--wine)">원본으로 되돌리기</button>':'')+'</div>';
   $('card').innerHTML=html;
+  const saveRef=()=>{
+    const r=$('editRef').value.trim();
+    if(r===curRef) return;
+    setMeta(v.key, refField, isKo()? r : (r+(ver?' '+ver:'')).trim());
+  };
   $('saveEditBtn').onclick=async()=>{
+    saveRef();
     const val=$('editTa').value.trim();
-    if(val)state.overrides[state.lang][v.key]=val; else delete state.overrides[state.lang][v.key];
+    if(val&&val!==(baseBody(v)||'').trim())state.overrides[state.lang][v.key]=val; else delete state.overrides[state.lang][v.key];
     await store.set('overrides',state.overrides);
     state.editing=false;render();
   };
   $('cancelEditBtn').onclick=()=>{state.editing=false;renderCard();};
   const rv=$('revertBtn');
-  if(rv)rv.onclick=async()=>{delete state.overrides[state.lang][v.key];await store.set('overrides',state.overrides);state.editing=false;render();};
+  if(rv)rv.onclick=async()=>{
+    delete state.overrides[state.lang][v.key];
+    if(hasRefMeta){ delete state.meta[v.key][refField]; if(!Object.keys(state.meta[v.key]).length) delete state.meta[v.key]; store.set('meta',state.meta); }
+    await store.set('overrides',state.overrides);
+    state.editing=false;render();
+  };
   $('editTa').focus();
 }
 
